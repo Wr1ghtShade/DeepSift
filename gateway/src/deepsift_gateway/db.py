@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
+from alembic import command
+from alembic.config import Config
 from deepsift_sdk.ids import new_id
 from sqlalchemy import (
     JSON,
@@ -16,7 +19,9 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     event,
+    inspect,
 )
+from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -183,7 +188,27 @@ def make_sessionmaker(engine: AsyncEngine) -> async_sessionmaker:
     return async_sessionmaker(engine, expire_on_commit=False)
 
 
+MIGRATIONS = Path(__file__).parent / "migrations"
+
+
+def alembic_config(connection: Connection | None = None) -> Config:
+    config = Config()
+    config.set_main_option("script_location", str(MIGRATIONS))
+    if connection is not None:
+        config.attributes["connection"] = connection
+    return config
+
+
+def _upgrade(connection: Connection) -> None:
+    config = alembic_config(connection)
+    tables = set(inspect(connection).get_table_names())
+    if "investigations" in tables and "alembic_version" not in tables:
+        # Created by create_all before migrations existed: same schema as the first one.
+        command.stamp(config, "0001")
+    command.upgrade(config, "head")
+
+
 async def create_schema(engine: AsyncEngine) -> None:
-    """Create missing tables. Schema migrations (Alembic) come with the first change."""
+    """Bring the database to the latest schema (Alembic migrations)."""
     async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
+        await connection.run_sync(_upgrade)

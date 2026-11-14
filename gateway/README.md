@@ -30,6 +30,22 @@ it creates a token in `$DEEPSIFT_DATA_DIR/api-token` (mode 0600) and logs the pa
 | `DEEPSIFT_HSTS` | off | `1` behind HTTPS |
 | `DEEPSIFT_SESSION_TTL` | `43200` | Session lifetime in seconds |
 
+## Database
+
+The schema is managed with Alembic (`src/deepsift_gateway/migrations`). The gateway
+upgrades the database itself at start; a database created before migrations existed is
+adopted as revision `0001`. After changing a model, add a revision:
+
+```
+uv run python -c "from alembic import command; from sqlalchemy import create_engine; \
+from deepsift_gateway.db import alembic_config; \
+e = create_engine('sqlite:////tmp/dev.db'); c = e.connect(); \
+command.upgrade(alembic_config(c), 'head'); \
+command.revision(alembic_config(c), message='what changed', autogenerate=True); c.commit()"
+```
+
+`gateway/tests/test_migrations.py` fails when a model change has no migration.
+
 ## Security
 
 | Layer | What the gateway does |
