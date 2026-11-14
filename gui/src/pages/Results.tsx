@@ -55,6 +55,8 @@ export function ResultsPage() {
     queryKey: keys.run(currentId ?? "none"),
     queryFn: () => api.run(currentId!),
     enabled: currentId !== null,
+    // The stream drives updates; this only catches a missed "run.completed".
+    refetchInterval: (query) => (query.state.data?.status === "running" ? 10_000 : false),
   });
   const entities = useQuery({ queryKey: keys.entities(id), queryFn: () => api.entities(id) });
   const graph = useQuery({ queryKey: keys.graph(id), queryFn: () => api.graph(id) });

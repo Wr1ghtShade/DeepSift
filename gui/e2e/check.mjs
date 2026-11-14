@@ -61,14 +61,20 @@ await step("new-search", async () => {
   investigation = page.url().split("/").pop();
 });
 
+async function waitFor(label, fn, timeout = 10000) {
+  try {
+    await page.waitForFunction(fn, { timeout });
+  } catch {
+    throw new Error(`timed out waiting for ${label}`);
+  }
+}
+
 await step("results", async () => {
-  await page.waitForFunction(() => document.querySelectorAll("table.data tbody tr").length >= 5, {
-    timeout: 10000,
-  });
-  await page.waitForFunction(() => document.querySelector(".lede")?.textContent?.includes("terminée"), {
-    timeout: 10000,
-  });
-  await page.waitForSelector(".graph canvas", { timeout: 10000 });
+  await waitFor("5 findings", () => document.querySelectorAll("table.data tbody tr").length >= 5);
+  await waitFor("the run to finish", () =>
+    document.querySelector(".lede")?.textContent?.includes("terminée"),
+  );
+  await waitFor("the graph", () => document.querySelector(".graph canvas"));
   await pause(500);
 });
 

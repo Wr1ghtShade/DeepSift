@@ -115,8 +115,10 @@ export function useInvestigationStream(investigationId: string): StreamState {
       socket.addEventListener("open", () => {
         attempts = 0;
         setState("open");
-        // Catch up on anything that happened while we were away.
+        // Catch up on anything that happened before the socket was open (a fast run
+        // can finish before the first message could reach us).
         void client.invalidateQueries({ queryKey: keys.investigation(investigationId) });
+        void client.invalidateQueries({ queryKey: ["run"] });
         refreshFindings();
       });
       socket.addEventListener("message", (event) => {
