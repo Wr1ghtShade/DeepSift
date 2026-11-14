@@ -33,8 +33,8 @@ This document defines how DeepSift services talk to the gateway. Any service tha
 | `web_page` | URL | `title`, `snippet`, `engine` |
 | `phone_meta` | E.164 | `country`, `carrier`, `line_type`, `valid` |
 | `mx_record` | host | `priority`, `domain` |
-| `image_hash` | `phash:<hex>` | `algo`, `sha256` |
-| `avatar_group` | group id | `members` |
+| `image_hash` | `phash:<64-bit hex>` | `algo`, `phash`, `dhash`, `sha256`, `width`, `height`, `format`, `trivial` (near-blank picture, e.g. a default avatar) |
+| `avatar_group` | group id | `members`. Made by the orchestrator, not by a service (section 6) |
 
 ### Entity object
 
@@ -141,6 +141,13 @@ The gateway owns pivots. Services never call each other.
 - When an `entity` event arrives, the gateway lists the services whose `inputs` include its type.
 - **Manual mode (default):** the GUI and CLI offer these services as pivots.
 - **Automatic mode:** set per run with `max_depth` (default 1, maximum 3). The gateway starts the tasks itself and never runs the same service twice on the same entity.
+- **CLI local mode** pivots automatically with `--depth` (default 1, `0` turns pivots off). `--service` limits the services run on the selector itself; pivots may use any installed service.
+
+### Correlation
+
+Some conclusions need every result of a run, which no single service sees. The orchestrator (the gateway, or the CLI in local mode) draws them:
+
+- **Avatar groups.** Profiles are linked to their avatar (`avatar`), avatars to their `image_hash` (`hash`). Hashes within 6 bits of each other (Hamming distance on the 64-bit pHash) are clustered, transitively. Hashes flagged `trivial` are left out. A cluster that covers two profiles or more becomes an avatar group, and its profiles get the avatar bonus (section 13).
 
 ## 7. Gateway API
 
@@ -189,6 +196,7 @@ The SDK provides an in-process bus with the same messages. `deepsift user nighto
 - Secrets live in environment variables or Docker secrets, never in manifests, messages or logs.
 - v1 binds to localhost or an internal network, behind Caddy for TLS. Authentication (login screen, user accounts) is planned for v1.5.
 - Downloaded avatars are stored by SHA-256 and served only through the gateway.
+- **Fetching URLs found online.** A service that downloads URLs taken from scraped pages must only reach public addresses, checking each redirect hop, and cap the size. Without a proxy it resolves the host and refuses any non-global address. Behind an HTTP(S) proxy it refuses private IP literals, `localhost`, single-label names and internal suffixes (`.local`, `.lan`, `.internal`…), and the proxy filters the rest. Egress rules on the host are the second layer.
 
 ## 11. Data policy
 

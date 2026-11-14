@@ -43,6 +43,51 @@ class FakeService(Service):
             await ctx.found(Entity(type=EntityType.PROFILE, value=url, confidence=confidence))
 
 
+class AvatarProfileService(Service):
+    """Finds one profile per site, each with an avatar image linked from it."""
+
+    _manifest = make_manifest("avatar-profiles", outputs=["profile", "image"])
+    sites: tuple[tuple[str, str], ...] = (
+        ("https://site-a.example/alice", "https://img.example/a.png"),
+        ("https://site-b.example/alice", "https://img.example/b.png"),
+        ("https://site-c.example/alice", "https://img.example/c.png"),
+    )
+
+    @classmethod
+    def get_manifest(cls) -> Manifest:
+        return cls._manifest
+
+    async def run(self, task: Task, ctx: TaskContext) -> None:
+        for url, avatar in self.sites:
+            profile = Entity(type=EntityType.PROFILE, value=url, confidence=0.6)
+            await ctx.found(profile)
+            image = Entity(type=EntityType.IMAGE, value=avatar, confidence=0.6)
+            await ctx.found(image, rel="avatar", parent=profile)
+
+
+class FakeHashService(Service):
+    """Hashes images from a lookup table, the way avatar-hash does."""
+
+    _manifest = make_manifest("fake-hash", inputs=["image"], outputs=["image_hash"])
+    #: a and b are the same picture recompressed (2 bits apart); c is another picture.
+    table = {
+        "https://img.example/a.png": "ffd8a0c0e0f0f8fc",
+        "https://img.example/b.png": "ffd8a0c0e0f0f8ff",
+        "https://img.example/c.png": "0123456789abcdef",
+    }
+
+    @classmethod
+    def get_manifest(cls) -> Manifest:
+        return cls._manifest
+
+    async def run(self, task: Task, ctx: TaskContext) -> None:
+        phash = self.table[task.input.value]
+        await ctx.found(
+            Entity(type=EntityType.IMAGE_HASH, value=f"phash:{phash}", attributes={"phash": phash}),
+            rel="hash",
+        )
+
+
 class OtherFakeService(FakeService):
     _manifest = make_manifest("other-fake")
     profiles = (("https://example.org/u/alice", 0.7), ("https://other.example/alice", 0.4))
