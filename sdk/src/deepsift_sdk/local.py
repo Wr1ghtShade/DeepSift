@@ -79,11 +79,25 @@ class FoundLink:
 
 
 class LocalRun:
-    def __init__(self, services: Mapping[str, Service], max_depth: int = 1) -> None:
+    def __init__(
+        self,
+        services: Mapping[str, Service],
+        max_depth: int = 1,
+        enabled: set[str] | None = None,
+    ) -> None:
+        """``enabled`` turns on services whose manifest has ``enabled_by_default: false``."""
         if not 0 <= max_depth <= MAX_DEPTH:
             raise ValueError(f"max_depth must be between 0 and {MAX_DEPTH}")
         self.services = dict(services)
         self.max_depth = max_depth
+        self.enabled = set(enabled or ())
+        unknown = sorted(self.enabled - self.services.keys())
+        if unknown:
+            raise ValueError(f"unknown service(s): {', '.join(unknown)}")
+        self._slots = {
+            name: asyncio.Semaphore(service.manifest.concurrency)
+            for name, service in self.services.items()
+        }
         self.input: Entity | None = None
         self.avatar_groups: list[AvatarGroup] = []
         self._findings: dict[Key, Finding] = {}
@@ -102,14 +116,22 @@ class LocalRun:
     def finding(self, key: Key) -> Finding | None:
         return self._findings.get(key)
 
+    def is_enabled(self, name: str) -> bool:
+        return self.services[name].manifest.enabled_by_default or name in self.enabled
+
     def plan(self, entity_type: EntityType, only: list[str] | None = None) -> list[Service]:
+        """Services to run on an entity of this type.
+
+        Opt-in services (``enabled_by_default: false``) run only when enabled, or when
+        named in ``only``.
+        """
         if only:
             unknown = sorted(set(only) - self.services.keys())
             if unknown:
                 raise ValueError(f"unknown service(s): {', '.join(unknown)}")
             candidates = [self.services[name] for name in only]
         else:
-            candidates = list(self.services.values())
+            candidates = [s for name, s in self.services.items() if self.is_enabled(name)]
         return [s for s in candidates if s.manifest.accepts(entity_type)]
 
     def _absorb(self, event: Event) -> None:
@@ -200,7 +222,7 @@ class LocalRun:
             self._absorb(event)
             depth = depth_of.get(event.task_id, 0)
             if event.event is EventKind.ENTITY and event.entity and depth < self.max_depth:
-                for service in self.plan(event.entity.type):
+                for service in self.plan(event.entity.type):  # pivots honour opt-in
                     spawn(service, event.entity, depth + 1)
             await queue.put(event)
 
@@ -221,7 +243,8 @@ class LocalRun:
                     )
                 )
                 return
-            await execute(service, task, sink)
+            async with self._slots[service.manifest.name]:
+                await execute(service, task, sink)
 
         for service in self.plan(entity_type, only):
             spawn(service, self.input, 0)

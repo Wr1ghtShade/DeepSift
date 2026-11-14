@@ -70,6 +70,7 @@ concurrency: 2                # tasks run in parallel by one instance
 rate_limit: 1/s               # optional, towards external sites
 secrets: []                   # names of required secrets, e.g. [TINEYE_API_KEY]
 optional_secrets: []          # names of secrets that improve results, e.g. [GRAVATAR_API_KEY]
+enabled_by_default: true      # false: runs only when turned on (sensitive or account-based services)
 options:                      # optional, shown in the GUI and as CLI flags
   depth:
     type: enum
@@ -83,6 +84,7 @@ Rules:
 - `secrets` lists **names only**. Values come from environment variables or Docker secrets and never travel on the bus.
 - A service with a missing secret registers anyway with state `needs_config`. The gateway does not send it tasks.
 - `optional_secrets` raise limits or unlock fields when set; the service works without them.
+- `enabled_by_default: false` marks a service that must be turned on explicitly (CLI `--enable`, a compose profile, a gateway setting): services that act through the user's own account, go against a platform's terms, or carry a higher legal risk. Opt-in services are not used for pivots unless turned on either.
 
 ## 4. Registration and health
 
@@ -190,7 +192,17 @@ The CLI uses this API when a gateway is configured. Otherwise it runs services a
 
 ## 9. Local mode (CLI without Docker)
 
-The SDK provides an in-process bus with the same messages. `deepsift user nightowl_77` loads the installed services as Python entry points (group `deepsift.services`) and runs them without Redis or a gateway. Results are printed, or saved with `--output`.
+The SDK provides an in-process bus with the same messages. `deepsift user nightowl_77` loads the installed services as Python entry points (group `deepsift.services`) and runs them without Redis or a gateway. Results are printed, or saved with `--output`. The local run honours each manifest's `concurrency`.
+
+### Services in other languages
+
+A service can be written in any language: in the stack it only has to speak the Redis streams of sections 4 and 5. For local mode it also implements a **stdio mode**:
+
+- it reads **one task** as a JSON line on stdin;
+- it writes **events** as JSON lines on stdout (same format as on the bus), ending with `completed` or `failed`;
+- it writes logs on stderr only, and exits.
+
+A small Python package makes it discoverable: a subclass of `deepsift_sdk.external.ExternalService` with the command to run, declared in the `deepsift.services` entry points. `DEEPSIFT_<NAME>_CMD` overrides the command. A missing program is reported as `needs_config` with an install hint. `services/whatsapp` (Node) is the reference.
 
 ## 10. Security
 

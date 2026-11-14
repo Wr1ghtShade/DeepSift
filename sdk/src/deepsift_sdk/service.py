@@ -57,6 +57,19 @@ class TaskContext:
             )
         )
 
+    async def relay(self, event: Event) -> None:
+        """Forward an entity or progress event produced elsewhere (e.g. by a child process).
+
+        The event is re-addressed to this task and service; other kinds are ignored.
+        """
+        if event.event not in (EventKind.ENTITY, EventKind.PROGRESS):
+            return
+        if event.event is EventKind.ENTITY:
+            self.count += 1
+        await self._sink(
+            event.model_copy(update={"task_id": self.task.task_id, "service": self.manifest.name})
+        )
+
     async def progress(self, done: int, total: int, message: str | None = None) -> None:
         await self._sink(
             Event(

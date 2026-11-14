@@ -51,6 +51,7 @@ class Manifest(BaseModel):
     rate_limit: str | None = None
     secrets: list[str] = Field(default_factory=list)
     optional_secrets: list[str] = Field(default_factory=list)
+    enabled_by_default: bool = True
     options: dict[str, OptionSpec] = Field(default_factory=dict)
 
     @field_validator("timeout", mode="before")
