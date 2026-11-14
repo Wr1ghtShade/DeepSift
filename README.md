@@ -7,7 +7,7 @@
 
 # DeepSift
 
-> **🚧 Work in progress.** DeepSift is in early development. Nothing is usable yet: the repository currently holds the design and the service contract. Expect breaking changes.
+> **🚧 Work in progress.** DeepSift is in early development. The CLI already runs username searches with Sherlock; the gateway, the web GUI and the other services are still to come. Expect breaking changes.
 
 DeepSift is an OSINT investigation console. Give it a selector — a username, an email address, a phone number, a domain or an image — and it runs the matching collection services, merges what they find, and lets you pivot from one result to the next.
 
@@ -17,9 +17,11 @@ It ships as a **CLI** and a **web GUI**, built on a **micro-service architecture
 
 | Area | State |
 |---|---|
-| Service contract | Draft — [`docs/specs/service-contract.md`](docs/specs/service-contract.md) |
-| Gateway, SDK, CLI | Not started |
-| Services | Not started |
+| Service contract | Draft v1 — [`docs/specs/service-contract.md`](docs/specs/service-contract.md) |
+| SDK | ✅ Models, `Service` base class, Redis Streams and in-memory buses, worker, local mode |
+| CLI | ✅ Local mode: `user`, `email`, `phone`, `domain`, `search`, `services` |
+| Services | ✅ `sherlock` · 9 more planned, see [`services/`](services/) |
+| Gateway | Not started |
 | Web GUI | Mockups done, not implemented |
 
 ## Planned features (v1)
@@ -50,12 +52,26 @@ Results from several services are de-duplicated and scored: a profile found by t
 
 Each service publishes a manifest (what it accepts, what it returns) and registers itself at startup. The GUI and CLI discover it automatically.
 
-## Installation
+## Try it (development)
 
-Not available yet. Two modes are planned:
+DeepSift is not on PyPI yet. From a clone, with [uv](https://docs.astral.sh/uv/):
 
-- `pipx install deepsift` for the CLI
-- `docker compose up` for the full stack with the web GUI
+```
+uv sync
+uv run deepsift services
+uv run deepsift user nightowl_77 -o findings.json
+```
+
+Later, two modes: `pipx install deepsift` for the CLI, and `docker compose up` for the full stack with the web GUI.
+
+## Development
+
+```
+uv sync                 # install the workspace (sdk, cli, services)
+uv run ruff check .     # lint
+uv run ruff format .    # format
+uv run pytest           # tests, no network needed
+```
 
 ## Roadmap
 

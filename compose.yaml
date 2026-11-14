@@ -1,6 +1,9 @@
 # DeepSift stack — work in progress.
-# Only the infrastructure is defined for now; the gateway, the GUI and the
-# services will be added as they are built.
+# The gateway and the GUI are not built yet: for now this runs the
+# infrastructure and the sherlock worker, which waits for tasks on Redis.
+#
+#   mkdir -p secrets && openssl rand -hex 24 > secrets/postgres_password.txt
+#   docker compose up --build
 
 services:
   redis:
@@ -20,6 +23,16 @@ services:
       - postgres_password
     volumes:
       - postgres-data:/var/lib/postgresql/data
+
+  svc-sherlock:
+    build:
+      context: .
+      dockerfile: services/sherlock/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
 
 secrets:
   postgres_password:
