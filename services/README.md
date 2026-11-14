@@ -12,7 +12,7 @@ One folder per service: a Python package with its `manifest.yaml`, a `Dockerfile
 | `phone-meta` | phone | phone_meta | Planned |
 | `ignorant` | phone | account | Planned |
 | `searxng` | all | web_page | Planned |
-| `avatar-hash` | image | image_hash, avatar_group | Planned |
+| [`avatar-hash`](avatar-hash/) | image | image_hash | ✅ Done |
 | `tineye` | image | web_page | Planned |
 
 To add one, copy `sherlock/`, change the manifest, implement `run()`, and add the folder to `members` in the root `pyproject.toml`.

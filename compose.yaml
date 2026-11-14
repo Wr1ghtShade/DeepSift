@@ -44,10 +44,23 @@ services:
     depends_on:
       - redis
 
+  svc-avatar-hash:
+    build:
+      context: .
+      dockerfile: services/avatar-hash/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - blobs:/data
+    depends_on:
+      - redis
+
 secrets:
   postgres_password:
     file: ./secrets/postgres_password.txt
 
 volumes:
+  blobs:
   redis-data:
   postgres-data:

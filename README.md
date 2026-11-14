@@ -7,7 +7,7 @@
 
 # DeepSift
 
-> **🚧 Work in progress.** DeepSift is in early development. The CLI already runs username searches with Sherlock and Maigret; the gateway, the web GUI and the other services are still to come. Expect breaking changes.
+> **🚧 Work in progress.** DeepSift is in early development. The CLI already runs username searches with Sherlock and Maigret, and spots profiles that share the same avatar; the gateway, the web GUI and the other services are still to come. Expect breaking changes.
 
 DeepSift is an OSINT investigation console. Give it a selector — a username, an email address, a phone number, a domain or an image — and it runs the matching collection services, merges what they find, and lets you pivot from one result to the next.
 
@@ -19,8 +19,8 @@ It ships as a **CLI** and a **web GUI**, built on a **micro-service architecture
 |---|---|
 | Service contract | Draft v1 — [`docs/specs/service-contract.md`](docs/specs/service-contract.md) |
 | SDK | ✅ Models, `Service` base class, Redis Streams and in-memory buses, worker, local mode |
-| CLI | ✅ Local mode: `user`, `email`, `phone`, `domain`, `search`, `services` |
-| Services | ✅ `sherlock`, `maigret` · 8 more planned, see [`services/`](services/) |
+| CLI | ✅ Local mode with automatic pivots and avatar groups: `user`, `email`, `phone`, `domain`, `image`, `search`, `services` |
+| Services | ✅ `sherlock`, `maigret`, `avatar-hash` · 7 more planned, see [`services/`](services/) |
 | Gateway | Not started |
 | Web GUI | Mockups done, not implemented |
 
