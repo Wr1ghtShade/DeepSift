@@ -78,6 +78,9 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8800/api/v1/health && break; sleep 1; done
       - name: Drive the GUI in headless Chrome under the real CSP
         run: cd gui && node e2e/check.mjs --screenshots ../e2e-screenshots
+      - name: Stop the gateway (it holds uv's cache lock)
+        if: always()
+        run: pkill -f gui/e2e/server.py || true
       - if: always()
         uses: actions/upload-artifact@v4
         with:
