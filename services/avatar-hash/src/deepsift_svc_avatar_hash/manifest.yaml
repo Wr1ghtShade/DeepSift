@@ -1,0 +1,21 @@
+contract: 1
+name: avatar-hash
+version: 0.1.0
+description: Downloads an image and computes its perceptual (pHash, dHash) and exact (SHA-256) hashes
+inputs: [image]
+outputs: [image_hash]
+links: [hash]
+mode: local
+license: BSD-2-Clause
+timeout: 30s
+concurrency: 4
+secrets: []
+options:
+  max_bytes:
+    type: int
+    default: 5000000
+    description: Largest image to download, in bytes
+  store_images:
+    type: bool
+    default: true
+    description: Keep a copy of each image in the blob store
