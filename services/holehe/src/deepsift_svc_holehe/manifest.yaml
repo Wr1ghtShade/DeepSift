@@ -1,0 +1,29 @@
+contract: 1
+name: holehe
+version: 0.1.0
+description: Checks which of 120+ sites an email address is registered on, without alerting it
+inputs: [email]
+outputs: [account]
+links: [registered_on]
+mode: library
+license: GPL-3.0
+timeout: 180s
+concurrency: 2
+secrets: []
+options:
+  module_timeout:
+    type: int
+    default: 10
+    description: Seconds to wait for each site
+  parallel:
+    type: int
+    default: 15
+    description: Sites checked at the same time
+  password_recovery:
+    type: bool
+    default: false
+    description: Also run the modules that use a password-recovery form (may be noticed)
+  include_nsfw:
+    type: bool
+    default: false
+    description: Also check adult sites
