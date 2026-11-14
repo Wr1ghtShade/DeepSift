@@ -11,9 +11,10 @@ One folder per service: a Python package with its `manifest.yaml`, a `Dockerfile
 | [`dns-mail`](dns-mail/) | email, domain | mx_record | ✅ Done |
 | [`phone-meta`](phone-meta/) | phone | phone_meta | ✅ Done |
 | [`ignorant`](ignorant/) | phone | account | ✅ Done |
-| `searxng` | all | web_page | Planned |
+| [`searxng`](searxng/) | username, email, phone, domain | web_page | ✅ Done |
 | [`avatar-hash`](avatar-hash/) | image | image_hash | ✅ Done |
-| `tineye` | image | web_page | Planned |
+| [`tineye`](tineye/) (needs `TINEYE_API_KEY`) | image | web_page | ✅ Done |
+| [`telegram`](telegram/) (off by default) | phone, username | profile, image, identity, username, phone | ✅ Done |
 | [`whatsapp`](whatsapp/) (Node, off by default) | phone | profile, image, email | ✅ Done |
 
 Services can be written in any language: `whatsapp/` is a Node example (contract section 9).

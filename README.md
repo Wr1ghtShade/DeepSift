@@ -7,7 +7,7 @@
 
 # DeepSift
 
-> **🚧 Work in progress.** DeepSift is in early development. The CLI already searches usernames (Sherlock, Maigret) email addresses (holehe, Gravatar, MX records) and phone numbers (offline metadata, ignorant), and spots profiles that share the same avatar; the gateway, the web GUI and the other services are still to come. Expect breaking changes.
+> **🚧 Work in progress.** DeepSift is in early development. Every v1 service works from the CLI (usernames, email addresses, phone numbers, domains and images, with automatic pivots and avatar matching); the gateway and the web GUI are still to come. Expect breaking changes.
 
 DeepSift is an OSINT investigation console. Give it a selector — a username, an email address, a phone number, a domain or an image — and it runs the matching collection services, merges what they find, and lets you pivot from one result to the next.
 
@@ -20,19 +20,22 @@ It ships as a **CLI** and a **web GUI**, built on a **micro-service architecture
 | Service contract | Draft v1 — [`docs/specs/service-contract.md`](docs/specs/service-contract.md) |
 | SDK | ✅ Models, `Service` base class, Redis Streams and in-memory buses, worker, local mode |
 | CLI | ✅ Local mode with automatic pivots and avatar groups: `user`, `email`, `phone`, `domain`, `image`, `search`, `services` |
-| Services | ✅ `whatsapp` (opt-in, Node) · 8 of 10 for v1: `sherlock`, `maigret`, `avatar-hash`, `holehe`, `gravatar`, `dns-mail`, `phone-meta`, `ignorant` · see [`services/`](services/) |
+| Services | ✅ All 10 v1 services, plus `telegram` and `whatsapp` (opt-in) · see [`services/`](services/) |
 | Gateway | Not started |
 | Web GUI | Mockups done, not implemented |
 
-## Planned features (v1)
+## Features
 
 | Selector | Services |
 |---|---|
-| Username | Sherlock (fast pass), Maigret (deep pass with profile extraction) |
-| Email | holehe, Gravatar, DNS/MX validation |
-| Phone number | Offline metadata (country, carrier, line type), ignorant |
-| Any | SearXNG meta-search (self-hosted) |
-| Image / avatar | Local perceptual hashing to correlate profiles that share an avatar; reverse image search through TinEye (API key) and prefilled Google Lens, Yandex and Bing links |
+| Username | Sherlock (fast pass), Maigret (deep pass with profile extraction), SearXNG |
+| Email | holehe, Gravatar, MX records and mail provider, SearXNG |
+| Phone number | Offline metadata (country, area, carrier, line type), ignorant, SearXNG |
+| Domain | MX records and mail provider, SearXNG |
+| Image / avatar | Perceptual hashing to spot profiles that share an avatar; TinEye reverse image search (API key) |
+| Opt-in | Telegram (phone or @username) and WhatsApp (phone), through a dedicated account of yours |
+
+Results from several services are de-duplicated and scored: a profile found by two tools, or sharing an avatar with another profile, gets a higher confidence. What a service finds is handed to the services that accept it (an avatar to avatar-hash and TinEye, a Telegram @username to Sherlock and Maigret…).
 
 Results from several services are de-duplicated and scored: a profile found by two tools, or sharing an avatar with another profile, gets a higher confidence.
 
@@ -61,6 +64,8 @@ uv sync
 uv run deepsift services
 uv run deepsift user nightowl_77 -o findings.json
 ```
+
+Some services need settings or keys: copy `.env.example` to `.env` and fill in what you use. For web mentions, run your own SearXNG (see the header of `compose.yaml`), then `export SEARXNG_URL=http://127.0.0.1:8080`. `deepsift services` shows what each service still needs.
 
 Later, two modes: `pipx install deepsift` for the CLI, and `docker compose up` for the full stack with the web GUI.
 

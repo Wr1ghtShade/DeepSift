@@ -48,7 +48,7 @@ jobs:
     needs: [test, node]
     strategy:
       matrix:
-        service: [sherlock, maigret, avatar-hash, holehe, gravatar, dns-mail, phone-meta, ignorant, whatsapp]
+        service: [sherlock, maigret, avatar-hash, holehe, gravatar, dns-mail, phone-meta, ignorant, searxng, tineye, telegram, whatsapp]
     steps:
       - uses: actions/checkout@v4
       - name: Build the ${{ matrix.service }} service image
