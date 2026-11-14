@@ -6,9 +6,9 @@ One folder per service: a Python package with its `manifest.yaml`, a `Dockerfile
 |---|---|---|---|
 | [`sherlock`](sherlock/) | username | profile | ✅ Done |
 | [`maigret`](maigret/) | username | profile, identity, image | ✅ Done |
-| `holehe` | email | account | Planned |
-| `gravatar` | email | profile, image | Planned |
-| `dns-mail` | email, domain | mx_record | Planned |
+| [`holehe`](holehe/) | email | account | ✅ Done |
+| [`gravatar`](gravatar/) | email | profile, image, identity | ✅ Done |
+| [`dns-mail`](dns-mail/) | email, domain | mx_record | ✅ Done |
 | `phone-meta` | phone | phone_meta | Planned |
 | `ignorant` | phone | account | Planned |
 | `searxng` | all | web_page | Planned |

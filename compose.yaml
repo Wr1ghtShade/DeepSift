@@ -56,6 +56,37 @@ services:
     depends_on:
       - redis
 
+  svc-holehe:
+    build:
+      context: .
+      dockerfile: services/holehe/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+
+  svc-gravatar:
+    build:
+      context: .
+      dockerfile: services/gravatar/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      GRAVATAR_API_KEY: ${GRAVATAR_API_KEY:-}
+    depends_on:
+      - redis
+
+  svc-dns-mail:
+    build:
+      context: .
+      dockerfile: services/dns-mail/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+
 secrets:
   postgres_password:
     file: ./secrets/postgres_password.txt

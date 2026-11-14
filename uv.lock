@@ -12,6 +12,9 @@ members = [
     "deepsift",
     "deepsift-sdk",
     "deepsift-svc-avatar-hash",
+    "deepsift-svc-dns-mail",
+    "deepsift-svc-gravatar",
+    "deepsift-svc-holehe",
     "deepsift-svc-maigret",
     "deepsift-svc-sherlock",
     "deepsift-workspace",
@@ -333,6 +336,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/21/28/9b3f50ce0e048515135495f198351908d99540d69bfdc8c1d15b73dc55ce/blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf", size = 22460, upload-time = "2024-11-08T17:25:47.436Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/10/cb/f2ad4230dc2eb1a74edf38f1a38b9b52277f75bef262d8908e60d957e13c/blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc", size = 8458, upload-time = "2024-11-08T17:25:46.184Z" },
+]
+
+[[package]]
+name = "bs4"
+version = "0.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c9/aa/4acaf814ff901145da37332e05bb510452ebed97bc9602695059dd46ef39/bs4-0.0.2.tar.gz", hash = "sha256:a48685c58f50fe127722417bae83fe6badf500d54b55f7e39ffe43b798653925", size = 698, upload-time = "2024-01-17T18:15:47.371Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/bb/bf7aab772a159614954d84aa832c129624ba6c32faa559dfb200a534e50b/bs4-0.0.2-py2.py3-none-any.whl", hash = "sha256:abf8742c0805ef7f662dce4b51cca104cffe52b835238afc169142ab9b3fbccc", size = 1189, upload-time = "2024-01-17T18:15:48.613Z" },
 ]
 
 [[package]]
@@ -662,11 +677,23 @@ dependencies = [
 [package.optional-dependencies]
 all = [
     { name = "deepsift-svc-avatar-hash" },
+    { name = "deepsift-svc-dns-mail" },
+    { name = "deepsift-svc-gravatar" },
+    { name = "deepsift-svc-holehe" },
     { name = "deepsift-svc-maigret" },
     { name = "deepsift-svc-sherlock" },
 ]
 avatar-hash = [
     { name = "deepsift-svc-avatar-hash" },
+]
+dns-mail = [
+    { name = "deepsift-svc-dns-mail" },
+]
+gravatar = [
+    { name = "deepsift-svc-gravatar" },
+]
+holehe = [
+    { name = "deepsift-svc-holehe" },
 ]
 maigret = [
     { name = "deepsift-svc-maigret" },
@@ -680,6 +707,12 @@ requires-dist = [
     { name = "deepsift-sdk", editable = "sdk" },
     { name = "deepsift-svc-avatar-hash", marker = "extra == 'all'", editable = "services/avatar-hash" },
     { name = "deepsift-svc-avatar-hash", marker = "extra == 'avatar-hash'", editable = "services/avatar-hash" },
+    { name = "deepsift-svc-dns-mail", marker = "extra == 'all'", editable = "services/dns-mail" },
+    { name = "deepsift-svc-dns-mail", marker = "extra == 'dns-mail'", editable = "services/dns-mail" },
+    { name = "deepsift-svc-gravatar", marker = "extra == 'all'", editable = "services/gravatar" },
+    { name = "deepsift-svc-gravatar", marker = "extra == 'gravatar'", editable = "services/gravatar" },
+    { name = "deepsift-svc-holehe", marker = "extra == 'all'", editable = "services/holehe" },
+    { name = "deepsift-svc-holehe", marker = "extra == 'holehe'", editable = "services/holehe" },
     { name = "deepsift-svc-maigret", marker = "extra == 'all'", editable = "services/maigret" },
     { name = "deepsift-svc-maigret", marker = "extra == 'maigret'", editable = "services/maigret" },
     { name = "deepsift-svc-sherlock", marker = "extra == 'all'", editable = "services/sherlock" },
@@ -687,7 +720,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["sherlock", "maigret", "avatar-hash", "all"]
+provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "all"]
 
 [[package]]
 name = "deepsift-sdk"
@@ -723,6 +756,55 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.27" },
     { name = "imagehash", specifier = ">=4.3" },
     { name = "pillow", specifier = ">=10" },
+]
+
+[[package]]
+name = "deepsift-svc-dns-mail"
+version = "0.1.0"
+source = { editable = "services/dns-mail" }
+dependencies = [
+    { name = "deepsift-sdk" },
+    { name = "dnspython" },
+    { name = "httpx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "deepsift-sdk", editable = "sdk" },
+    { name = "dnspython", specifier = ">=2.6" },
+    { name = "httpx", specifier = ">=0.27" },
+]
+
+[[package]]
+name = "deepsift-svc-gravatar"
+version = "0.1.0"
+source = { editable = "services/gravatar" }
+dependencies = [
+    { name = "deepsift-sdk" },
+    { name = "httpx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "deepsift-sdk", editable = "sdk" },
+    { name = "httpx", specifier = ">=0.27" },
+]
+
+[[package]]
+name = "deepsift-svc-holehe"
+version = "0.1.0"
+source = { editable = "services/holehe" }
+dependencies = [
+    { name = "deepsift-sdk" },
+    { name = "holehe" },
+    { name = "httpx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "deepsift-sdk", editable = "sdk" },
+    { name = "holehe", specifier = ">=1.61" },
+    { name = "httpx", specifier = ">=0.27" },
 ]
 
 [[package]]
@@ -765,6 +847,9 @@ dev = [
     { name = "deepsift" },
     { name = "deepsift-sdk" },
     { name = "deepsift-svc-avatar-hash" },
+    { name = "deepsift-svc-dns-mail" },
+    { name = "deepsift-svc-gravatar" },
+    { name = "deepsift-svc-holehe" },
     { name = "deepsift-svc-maigret" },
     { name = "deepsift-svc-sherlock" },
     { name = "fakeredis" },
@@ -780,12 +865,24 @@ dev = [
     { name = "deepsift", editable = "cli" },
     { name = "deepsift-sdk", editable = "sdk" },
     { name = "deepsift-svc-avatar-hash", editable = "services/avatar-hash" },
+    { name = "deepsift-svc-dns-mail", editable = "services/dns-mail" },
+    { name = "deepsift-svc-gravatar", editable = "services/gravatar" },
+    { name = "deepsift-svc-holehe", editable = "services/holehe" },
     { name = "deepsift-svc-maigret", editable = "services/maigret" },
     { name = "deepsift-svc-sherlock", editable = "services/sherlock" },
     { name = "fakeredis", specifier = ">=2.26" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
     { name = "ruff", specifier = ">=0.6" },
+]
+
+[[package]]
+name = "dnspython"
+version = "2.9.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/49/900383b471c645a3c397f47b3211d1fcecb3a540c98f683494cdf86b33de/dnspython-2.9.2.tar.gz", hash = "sha256:8d4d39a513e649d634004ce4d39ade2352efcea472a0247535a5c2d18a9d7ba9", size = 455484, upload-time = "2026-11-03T23:56:53.601Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/0c/5346358b3a20275d256978c35203ddc2c8617f78c1b23795b79ba22ced6d/dnspython-2.9.2-py3-none-any.whl", hash = "sha256:af15f7d385a6ae2fb35a796fde2138004c8c42c7389090e2addc83e3b3340fd8", size = 360455, upload-time = "2026-11-03T23:56:52.088Z" },
 ]
 
 [[package]]
@@ -963,6 +1060,20 @@ sdist = { url = "https://files.pythonhosted.org/packages/01/ee/02a2c011bdab74c6f
 wheels = [
     { url = "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86", size = 37515, upload-time = "2025-04-24T03:35:24.344Z" },
 ]
+
+[[package]]
+name = "holehe"
+version = "1.61"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "bs4" },
+    { name = "colorama" },
+    { name = "httpx" },
+    { name = "termcolor" },
+    { name = "tqdm" },
+    { name = "trio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9f/86/2793b1d6139a54903d59d68aec364fe92260ddaa2e27c938dcace62a1eb0/holehe-1.61.tar.gz", hash = "sha256:1a02e7c103b9abcb485eb0aaca36d950ac6bff4ec001d644362cc46739916b3b", size = 44563, upload-time = "2022-07-21T14:22:36.62Z" }
 
 [[package]]
 name = "html5lib"
@@ -1782,6 +1893,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/3d/f9/88d94a75de065ea32619465d2f77b29a0469500e99012523b91cc4141cd1/openpyxl-3.1.5.tar.gz", hash = "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050", size = 186464, upload-time = "2024-06-28T14:03:44.161Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl", hash = "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2", size = 250910, upload-time = "2024-06-28T14:03:41.161Z" },
+]
+
+[[package]]
+name = "outcome"
+version = "1.3.0.post0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/df/77698abfac98571e65ffeb0c1fba8ffd692ab8458d617a0eed7d9a8d38f2/outcome-1.3.0.post0.tar.gz", hash = "sha256:9dcf02e65f2971b80047b377468e72a268e15c0af3cf1238e6ff14f7f91143b8", size = 21060, upload-time = "2023-10-26T04:26:04.361Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/8b/5ab7257531a5d830fc8000c476e63c935488d74609b50f9384a643ec0a62/outcome-1.3.0.post0-py2.py3-none-any.whl", hash = "sha256:e771c5ce06d1415e356078d3bdd68523f284b4ce5419828922b6871e65eda82b", size = 10692, upload-time = "2023-10-26T04:26:02.532Z" },
 ]
 
 [[package]]
@@ -2996,6 +3119,15 @@ wheels = [
 ]
 
 [[package]]
+name = "sniffio"
+version = "1.3.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a2/87/a6771e1546d97e7e041b6ae58d80074f81b7d5121207425c964ddf5cfdbd/sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc", size = 20372, upload-time = "2024-02-25T23:20:04.057Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e9/44/75a9c9421471a6c4805dbf2356f7c181a29c1879239abab1ea2cc8f38b40/sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2", size = 10235, upload-time = "2024-02-25T23:20:01.196Z" },
+]
+
+[[package]]
 name = "socid-extractor"
 version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3046,6 +3178,15 @@ name = "stem"
 version = "1.8.2"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/c6/b2258155546f966744e78b9862f62bd2b8671b422bb9951a1330e4c8fd73/stem-1.8.2.tar.gz", hash = "sha256:83fb19ffd4c9f82207c006051480389f80af221a7e4783000aedec4e384eb582", size = 2859640, upload-time = "2023-06-06T06:37:21.251Z" }
+
+[[package]]
+name = "termcolor"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/79/cf31d7a93a8fdc6aa0fbb665be84426a8c5a557d9240b6239e9e11e35fc5/termcolor-3.3.0.tar.gz", hash = "sha256:348871ca648ec6a9a983a13ab626c0acce02f515b9e1983332b17af7979521c5", size = 14434, upload-time = "2025-12-29T12:55:21.882Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/33/d1/8bb87d21e9aeb323cc03034f5eaf2c8f69841e40e4853c2627edf8111ed3/termcolor-3.3.0-py3-none-any.whl", hash = "sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5", size = 7734, upload-time = "2025-12-29T12:55:20.718Z" },
+]
 
 [[package]]
 name = "tomli"
@@ -3120,12 +3261,41 @@ wheels = [
 ]
 
 [[package]]
+name = "tqdm"
+version = "4.70.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0d/ea/b2a5bd54b28a324dae8211928b2d730b6547500342c7e6c6dea08bd0a485/tqdm-4.70.1.tar.gz", hash = "sha256:cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4", size = 171846, upload-time = "2026-09-11T07:25:16.601Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl", hash = "sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73", size = 80199, upload-time = "2026-09-11T07:25:14.599Z" },
+]
+
+[[package]]
 name = "traitlets"
 version = "5.16.1"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/2c/2e/a7fbfe268c8a3b32546930c0297c101d65a4a14c304ad5790a9f478f0e4e/traitlets-5.16.1.tar.gz", hash = "sha256:ed900c2b631aa3a112811139fa97b8d2c3bad5e989656bba4b7e52c7852c18c1", size = 166137, upload-time = "2026-08-03T08:32:36.848Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ad/66/0d785f0bc5e4315a96c989bb476d0fc07ea4f85132550c7b156ca2035d52/traitlets-5.16.1-py3-none-any.whl", hash = "sha256:f775618166caa0396c8e337099240f2bd3e5e917d203b2e6fbe21a58d3cb1f6b", size = 86211, upload-time = "2026-08-03T08:32:34.48Z" },
+]
+
+[[package]]
+name = "trio"
+version = "0.35.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "cffi", marker = "implementation_name != 'pypy' and os_name == 'nt'" },
+    { name = "idna" },
+    { name = "outcome" },
+    { name = "sniffio" },
+    { name = "sortedcontainers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9c/e2/1db4e79abb730bbf048c1024a622b0e1e895f5b0e18c59f3f6b3e4b296ef/trio-0.35.0.tar.gz", hash = "sha256:7efb295c78a0ecd1235c5759e620b5da564ca80d2efcb0055423588547248b96", size = 609525, upload-time = "2026-10-31T23:36:55.506Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/c6/77f116686de6b1bb4159ef70d476ef75576ad7819d4eeb783f6efb40f380/trio-0.35.0-py3-none-any.whl", hash = "sha256:9a062a029487c1bdbcc1b2543b729a0bde857ce478b1512c84f391f628e0c5c9", size = 513178, upload-time = "2026-10-31T23:36:53.705Z" },
 ]
 
 [[package]]
