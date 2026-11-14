@@ -169,11 +169,12 @@ export default function Graph({ data }: { data: GraphData }) {
       instance.add(fresh.filter((item) => !("source" in item.data)));
       instance.add(fresh.filter((item) => "source" in item.data));
     });
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     layout.current?.stop();
+    // Computed in one go: an animated cose layout keeps ticking on timers, and a tick
+    // that lands after the page is left hits a destroyed instance.
     layout.current = instance.layout({
       name: "cose",
-      animate: !reduced && instance.nodes().length < 150,
+      animate: false,
       padding: 24,
       nodeRepulsion: () => 9000,
     });
