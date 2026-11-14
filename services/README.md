@@ -5,7 +5,7 @@ One folder per service: a Python package with its `manifest.yaml`, a `Dockerfile
 | Service | Accepts | Returns | State |
 |---|---|---|---|
 | [`sherlock`](sherlock/) | username | profile | ✅ Done |
-| `maigret` | username | profile, identity, image | Planned |
+| [`maigret`](maigret/) | username | profile, identity, image | ✅ Done |
 | `holehe` | email | account | Planned |
 | `gravatar` | email | profile, image | Planned |
 | `dns-mail` | email, domain | mx_record | Planned |

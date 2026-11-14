@@ -1,6 +1,6 @@
 # DeepSift stack — work in progress.
 # The gateway and the GUI are not built yet: for now this runs the
-# infrastructure and the sherlock worker, which waits for tasks on Redis.
+# infrastructure and the service workers, which wait for tasks on Redis.
 #
 #   mkdir -p secrets && openssl rand -hex 24 > secrets/postgres_password.txt
 #   docker compose up --build
@@ -28,6 +28,16 @@ services:
     build:
       context: .
       dockerfile: services/sherlock/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+
+  svc-maigret:
+    build:
+      context: .
+      dockerfile: services/maigret/Dockerfile
     restart: unless-stopped
     environment:
       REDIS_URL: redis://redis:6379/0

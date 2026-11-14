@@ -27,7 +27,10 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     needs: test
+    strategy:
+      matrix:
+        service: [sherlock, maigret]
     steps:
       - uses: actions/checkout@v4
-      - name: Build the sherlock service image
-        run: docker build -f services/sherlock/Dockerfile -t deepsift/svc-sherlock .
+      - name: Build the ${{ matrix.service }} service image
+        run: docker build -f services/${{ matrix.service }}/Dockerfile -t deepsift/svc-${{ matrix.service }} .
