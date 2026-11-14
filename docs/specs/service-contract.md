@@ -201,8 +201,32 @@ The SDK provides an in-process bus with the same messages. `deepsift user nighto
 - Adding optional fields keeps the version. Removing or changing a field increments it.
 - The gateway accepts the current version and the one before it.
 
-## Open questions
+## 13. Confidence
 
-- Redis Streams or NATS JetStream for the bus? Redis is the default, as it is already needed for caching.
-- Object storage: local volume first, S3-compatible (MinIO) later?
-- How the gateway combines confidences from several services.
+Each service gives every entity its own `confidence` (0 to 1). When several services find the same entity (same identity key, section 2), the gateway combines them with a noisy-OR:
+
+```
+combined = 1 − Π (1 − cᵢ)
+```
+
+Each extra source raises the score without ever passing 1. A `profile` whose avatar belongs to an `avatar_group` already linked to the selector gets a bonus of +0.15, capped at 1.
+
+| Level shown | Combined score |
+|---|---|
+| High | ≥ 0.8 |
+| Medium | ≥ 0.5 |
+| Low | < 0.5 |
+
+Example: Sherlock gives 0.6 and Maigret 0.7, so the profile scores 1 − 0.4 × 0.3 = 0.88 (High). Found by Sherlock alone, it stays at 0.6 (Medium).
+
+## 14. Storage
+
+Downloaded files (avatars, exports) are content-addressed: stored under their SHA-256, which removes duplicates for free. v1 uses a local volume (`/data/blobs/<first 2 hex>/<sha256>`). The SDK hides it behind a `Storage` interface so an S3-compatible backend (MinIO) can replace it later without changes to services.
+
+## Decisions log
+
+| Date | Decision |
+|---|---|
+| 2026-11-14 | Bus: Redis Streams. The SDK keeps a `Bus` interface so NATS JetStream stays possible |
+| 2026-11-14 | Storage: local content-addressed volume in v1, MinIO later (section 14) |
+| 2026-11-14 | Confidence: noisy-OR with an avatar bonus (section 13) |
