@@ -50,6 +50,7 @@ class Manifest(BaseModel):
     concurrency: int = Field(default=1, ge=1)
     rate_limit: str | None = None
     secrets: list[str] = Field(default_factory=list)
+    config: list[str] = Field(default_factory=list)
     optional_secrets: list[str] = Field(default_factory=list)
     enabled_by_default: bool = True
     options: dict[str, OptionSpec] = Field(default_factory=dict)
@@ -70,8 +71,9 @@ class Manifest(BaseModel):
         return entity_type in self.inputs
 
     def missing_secrets(self, env: Mapping[str, str] | None = None) -> list[str]:
+        """Required environment variables that are not set: secrets, then config."""
         env = os.environ if env is None else env
-        return [name for name in self.secrets if not env.get(name)]
+        return [name for name in (*self.secrets, *self.config) if not env.get(name)]
 
     def missing_optional_secrets(self, env: Mapping[str, str] | None = None) -> list[str]:
         env = os.environ if env is None else env

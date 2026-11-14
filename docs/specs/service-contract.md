@@ -69,6 +69,7 @@ timeout: 300s                 # per task
 concurrency: 2                # tasks run in parallel by one instance
 rate_limit: 1/s               # optional, towards external sites
 secrets: []                   # names of required secrets, e.g. [TINEYE_API_KEY]
+config: []                    # required non-secret settings from the environment, e.g. [SEARXNG_URL]
 optional_secrets: []          # names of secrets that improve results, e.g. [GRAVATAR_API_KEY]
 enabled_by_default: true      # false: runs only when turned on (sensitive or account-based services)
 options:                      # optional, shown in the GUI and as CLI flags
@@ -82,7 +83,8 @@ Rules:
 
 - `inputs` and `outputs` use the types of section 2. A new type needs a change to this document.
 - `secrets` lists **names only**. Values come from environment variables or Docker secrets and never travel on the bus.
-- A service with a missing secret registers anyway with state `needs_config`. The gateway does not send it tasks.
+- `config` works like `secrets` for readiness, for values that are not secret (an instance URL).
+- A service with a missing secret or config registers anyway with state `needs_config`. The gateway does not send it tasks.
 - `optional_secrets` raise limits or unlock fields when set; the service works without them.
 - In local mode, a service missing a required secret is skipped (not failed) unless it is named with `--service`.
 - `enabled_by_default: false` marks a service that must be turned on explicitly (CLI `--enable`, a compose profile, a gateway setting): services that act through the user's own account, go against a platform's terms, or carry a higher legal risk. Opt-in services are not used for pivots unless turned on either.
