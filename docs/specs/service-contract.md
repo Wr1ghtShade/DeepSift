@@ -274,7 +274,7 @@ Example: Sherlock gives 0.6 and Maigret 0.7, so the profile scores 1 − 0.4 × 
 
 ## 14. Storage
 
-Downloaded files (avatars, exports) are content-addressed: stored under their SHA-256, which removes duplicates for free. v1 uses a local volume (`/data/blobs/<first 2 hex>/<sha256>`). The SDK hides it behind a `Storage` interface so an S3-compatible backend (MinIO) can replace it later without changes to services.
+Downloaded files (avatars, exports) are content-addressed: stored under their SHA-256, which removes duplicates for free. v1 uses a local volume (`/data/blobs/<first 2 hex>/<sha256>`). Every image runs as the same user, `deepsift` with uid and gid 10001, so all of them can read and write the shared volume. The SDK hides it behind a `Storage` interface so an S3-compatible backend (MinIO) can replace it later without changes to services.
 
 ## Decisions log
 

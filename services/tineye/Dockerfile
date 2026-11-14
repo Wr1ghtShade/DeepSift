@@ -8,7 +8,9 @@ WORKDIR /app
 COPY sdk /app/sdk
 COPY services/tineye /app/services/tineye
 RUN pip install --no-cache-dir /app/sdk /app/services/tineye \
-    && useradd --system --no-create-home deepsift
+    && groupadd --system --gid 10001 deepsift \
+    && useradd --system --no-create-home --uid 10001 --gid 10001 deepsift \
+    && mkdir -p /data/blobs && chown -R deepsift /data
 
 USER deepsift
 CMD ["python", "-m", "deepsift_sdk.worker", "deepsift_svc_tineye:TinEyeService"]

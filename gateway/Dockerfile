@@ -20,7 +20,8 @@ WORKDIR /app
 COPY sdk /app/sdk
 COPY gateway /app/gateway
 RUN pip install --no-cache-dir /app/sdk /app/gateway \
-    && useradd --system --no-create-home deepsift \
+    && groupadd --system --gid 10001 deepsift \
+    && useradd --system --no-create-home --uid 10001 --gid 10001 deepsift \
     && mkdir -p /data/blobs && chown -R deepsift /data
 COPY --from=gui /gui/dist /app/gui
 

@@ -11,8 +11,9 @@ WORKDIR /app
 COPY sdk /app/sdk
 COPY services/telegram /app/services/telegram
 RUN pip install --no-cache-dir /app/sdk /app/services/telegram \
-    && useradd --system --no-create-home deepsift \
-    && mkdir -p /data && chown deepsift /data
+    && groupadd --system --gid 10001 deepsift \
+    && useradd --system --no-create-home --uid 10001 --gid 10001 deepsift \
+    && mkdir -p /data/blobs && chown -R deepsift /data
 
 USER deepsift
 VOLUME ["/data"]
