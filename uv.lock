@@ -19,6 +19,7 @@ members = [
     "deepsift-svc-maigret",
     "deepsift-svc-phone-meta",
     "deepsift-svc-sherlock",
+    "deepsift-svc-whatsapp",
     "deepsift-workspace",
 ]
 
@@ -720,6 +721,9 @@ phone-meta = [
 sherlock = [
     { name = "deepsift-svc-sherlock" },
 ]
+whatsapp = [
+    { name = "deepsift-svc-whatsapp" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -740,10 +744,11 @@ requires-dist = [
     { name = "deepsift-svc-phone-meta", marker = "extra == 'phone-meta'", editable = "services/phone-meta" },
     { name = "deepsift-svc-sherlock", marker = "extra == 'all'", editable = "services/sherlock" },
     { name = "deepsift-svc-sherlock", marker = "extra == 'sherlock'", editable = "services/sherlock" },
+    { name = "deepsift-svc-whatsapp", marker = "extra == 'whatsapp'", editable = "services/whatsapp" },
     { name = "rich", specifier = ">=13" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "phone-meta", "ignorant", "all"]
+provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "phone-meta", "ignorant", "whatsapp", "all"]
 
 [[package]]
 name = "deepsift-sdk"
@@ -895,6 +900,17 @@ requires-dist = [
 ]
 
 [[package]]
+name = "deepsift-svc-whatsapp"
+version = "0.1.0"
+source = { editable = "services/whatsapp" }
+dependencies = [
+    { name = "deepsift-sdk" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "deepsift-sdk", editable = "sdk" }]
+
+[[package]]
 name = "deepsift-workspace"
 version = "0.0.0"
 source = { virtual = "." }
@@ -911,6 +927,7 @@ dev = [
     { name = "deepsift-svc-maigret" },
     { name = "deepsift-svc-phone-meta" },
     { name = "deepsift-svc-sherlock" },
+    { name = "deepsift-svc-whatsapp" },
     { name = "fakeredis" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -931,6 +948,7 @@ dev = [
     { name = "deepsift-svc-maigret", editable = "services/maigret" },
     { name = "deepsift-svc-phone-meta", editable = "services/phone-meta" },
     { name = "deepsift-svc-sherlock", editable = "services/sherlock" },
+    { name = "deepsift-svc-whatsapp", editable = "services/whatsapp" },
     { name = "fakeredis", specifier = ">=2.26" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-asyncio", specifier = ">=0.24" },

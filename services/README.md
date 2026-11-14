@@ -14,5 +14,8 @@ One folder per service: a Python package with its `manifest.yaml`, a `Dockerfile
 | `searxng` | all | web_page | Planned |
 | [`avatar-hash`](avatar-hash/) | image | image_hash | ✅ Done |
 | `tineye` | image | web_page | Planned |
+| [`whatsapp`](whatsapp/) (Node, off by default) | phone | profile, image, email | ✅ Done |
 
-To add one, copy `sherlock/`, change the manifest, implement `run()`, and add the folder to `members` in the root `pyproject.toml`.
+Services can be written in any language: `whatsapp/` is a Node example (contract section 9).
+
+To add a Python one, copy `sherlock/`, change the manifest, implement `run()`, and add the folder to `members` in the root `pyproject.toml`.

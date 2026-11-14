@@ -107,11 +107,28 @@ services:
     depends_on:
       - redis
 
+  # Off by default: read services/whatsapp/README.md, then
+  #   docker compose --profile whatsapp run --rm svc-whatsapp link --phone +33…
+  #   docker compose --profile whatsapp up -d svc-whatsapp
+  svc-whatsapp:
+    profiles: [whatsapp]
+    build:
+      context: .
+      dockerfile: services/whatsapp/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - whatsapp-data:/data
+    depends_on:
+      - redis
+
 secrets:
   postgres_password:
     file: ./secrets/postgres_password.txt
 
 volumes:
   blobs:
+  whatsapp-data:
   redis-data:
   postgres-data:

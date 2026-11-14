@@ -20,7 +20,7 @@ It ships as a **CLI** and a **web GUI**, built on a **micro-service architecture
 | Service contract | Draft v1 — [`docs/specs/service-contract.md`](docs/specs/service-contract.md) |
 | SDK | ✅ Models, `Service` base class, Redis Streams and in-memory buses, worker, local mode |
 | CLI | ✅ Local mode with automatic pivots and avatar groups: `user`, `email`, `phone`, `domain`, `image`, `search`, `services` |
-| Services | ✅ 8 of 10 for v1: `sherlock`, `maigret`, `avatar-hash`, `holehe`, `gravatar`, `dns-mail`, `phone-meta`, `ignorant` · see [`services/`](services/) |
+| Services | ✅ `whatsapp` (opt-in, Node) · 8 of 10 for v1: `sherlock`, `maigret`, `avatar-hash`, `holehe`, `gravatar`, `dns-mail`, `phone-meta`, `ignorant` · see [`services/`](services/) |
 | Gateway | Not started |
 | Web GUI | Mockups done, not implemented |
 
@@ -82,6 +82,9 @@ uv run pytest           # tests, no network needed
 | v2 | X, Instagram, TikTok |
 
 ## Ethics and legal
+
+Some services act through an account of yours or go against a platform's terms (e.g. `whatsapp`). They are **off by default**, documented with their risks, and run only when you turn them on (`--enable`).
+
 
 DeepSift only collects **publicly available** information. It will not integrate breached or stolen data, and it does not do facial recognition. Respect the terms of service of the sites you query and the laws that apply to you (GDPR in the EU). You are responsible for how you use it.
 
