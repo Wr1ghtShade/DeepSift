@@ -21,6 +21,7 @@ members = [
     "deepsift-svc-searxng",
     "deepsift-svc-sherlock",
     "deepsift-svc-telegram",
+    "deepsift-svc-tineye",
     "deepsift-svc-whatsapp",
     "deepsift-workspace",
 ]
@@ -699,6 +700,7 @@ all = [
     { name = "deepsift-svc-phone-meta" },
     { name = "deepsift-svc-searxng" },
     { name = "deepsift-svc-sherlock" },
+    { name = "deepsift-svc-tineye" },
 ]
 avatar-hash = [
     { name = "deepsift-svc-avatar-hash" },
@@ -730,6 +732,9 @@ sherlock = [
 telegram = [
     { name = "deepsift-svc-telegram" },
 ]
+tineye = [
+    { name = "deepsift-svc-tineye" },
+]
 whatsapp = [
     { name = "deepsift-svc-whatsapp" },
 ]
@@ -756,11 +761,13 @@ requires-dist = [
     { name = "deepsift-svc-sherlock", marker = "extra == 'all'", editable = "services/sherlock" },
     { name = "deepsift-svc-sherlock", marker = "extra == 'sherlock'", editable = "services/sherlock" },
     { name = "deepsift-svc-telegram", marker = "extra == 'telegram'", editable = "services/telegram" },
+    { name = "deepsift-svc-tineye", marker = "extra == 'all'", editable = "services/tineye" },
+    { name = "deepsift-svc-tineye", marker = "extra == 'tineye'", editable = "services/tineye" },
     { name = "deepsift-svc-whatsapp", marker = "extra == 'whatsapp'", editable = "services/whatsapp" },
     { name = "rich", specifier = ">=13" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "phone-meta", "ignorant", "whatsapp", "telegram", "searxng", "all"]
+provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "phone-meta", "ignorant", "whatsapp", "telegram", "searxng", "tineye", "all"]
 
 [[package]]
 name = "deepsift-sdk"
@@ -946,6 +953,21 @@ requires-dist = [
 ]
 
 [[package]]
+name = "deepsift-svc-tineye"
+version = "0.1.0"
+source = { editable = "services/tineye" }
+dependencies = [
+    { name = "deepsift-sdk" },
+    { name = "httpx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "deepsift-sdk", editable = "sdk" },
+    { name = "httpx", specifier = ">=0.27" },
+]
+
+[[package]]
 name = "deepsift-svc-whatsapp"
 version = "0.1.0"
 source = { editable = "services/whatsapp" }
@@ -975,6 +997,7 @@ dev = [
     { name = "deepsift-svc-searxng" },
     { name = "deepsift-svc-sherlock" },
     { name = "deepsift-svc-telegram" },
+    { name = "deepsift-svc-tineye" },
     { name = "deepsift-svc-whatsapp" },
     { name = "fakeredis" },
     { name = "pytest" },
@@ -998,6 +1021,7 @@ dev = [
     { name = "deepsift-svc-searxng", editable = "services/searxng" },
     { name = "deepsift-svc-sherlock", editable = "services/sherlock" },
     { name = "deepsift-svc-telegram", editable = "services/telegram" },
+    { name = "deepsift-svc-tineye", editable = "services/tineye" },
     { name = "deepsift-svc-whatsapp", editable = "services/whatsapp" },
     { name = "fakeredis", specifier = ">=2.26" },
     { name = "pytest", specifier = ">=8" },

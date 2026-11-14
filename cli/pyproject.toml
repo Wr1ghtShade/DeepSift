@@ -23,6 +23,7 @@ ignorant = ["deepsift-svc-ignorant"]
 whatsapp = ["deepsift-svc-whatsapp"]
 telegram = ["deepsift-svc-telegram"]
 searxng = ["deepsift-svc-searxng"]
+tineye = ["deepsift-svc-tineye"]
 all = [
   "deepsift-svc-sherlock",
   "deepsift-svc-maigret",
@@ -33,6 +34,7 @@ all = [
   "deepsift-svc-phone-meta",
   "deepsift-svc-ignorant",
   "deepsift-svc-searxng",
+  "deepsift-svc-tineye",
 ]
 
 [project.scripts]
@@ -51,6 +53,7 @@ deepsift-svc-ignorant = { workspace = true }
 deepsift-svc-whatsapp = { workspace = true }
 deepsift-svc-telegram = { workspace = true }
 deepsift-svc-searxng = { workspace = true }
+deepsift-svc-tineye = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
