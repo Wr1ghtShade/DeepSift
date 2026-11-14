@@ -84,6 +84,7 @@ Rules:
 - `secrets` lists **names only**. Values come from environment variables or Docker secrets and never travel on the bus.
 - A service with a missing secret registers anyway with state `needs_config`. The gateway does not send it tasks.
 - `optional_secrets` raise limits or unlock fields when set; the service works without them.
+- In local mode, a service missing a required secret is skipped (not failed) unless it is named with `--service`.
 - `enabled_by_default: false` marks a service that must be turned on explicitly (CLI `--enable`, a compose profile, a gateway setting): services that act through the user's own account, go against a platform's terms, or carry a higher legal risk. Opt-in services are not used for pivots unless turned on either.
 
 ## 4. Registration and health

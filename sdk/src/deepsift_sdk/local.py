@@ -122,8 +122,9 @@ class LocalRun:
     def plan(self, entity_type: EntityType, only: list[str] | None = None) -> list[Service]:
         """Services to run on an entity of this type.
 
-        Opt-in services (``enabled_by_default: false``) run only when enabled, or when
-        named in ``only``.
+        Opt-in services (``enabled_by_default: false``) run only when enabled, and
+        services missing a required secret are skipped, unless named in ``only`` (then
+        they run and report what is missing).
         """
         if only:
             unknown = sorted(set(only) - self.services.keys())
@@ -131,7 +132,11 @@ class LocalRun:
                 raise ValueError(f"unknown service(s): {', '.join(unknown)}")
             candidates = [self.services[name] for name in only]
         else:
-            candidates = [s for name, s in self.services.items() if self.is_enabled(name)]
+            candidates = [
+                s
+                for name, s in self.services.items()
+                if self.is_enabled(name) and not s.manifest.missing_secrets()
+            ]
         return [s for s in candidates if s.manifest.accepts(entity_type)]
 
     def _absorb(self, event: Event) -> None:
