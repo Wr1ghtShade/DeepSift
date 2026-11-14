@@ -281,3 +281,11 @@ def test_websocket_refuses_strangers(client: TestClient) -> None:
             assert exc.code == 1008
         else:
             raise AssertionError("connection should have been refused")
+
+
+def test_info(api: TestClient) -> None:
+    info = api.get("/api/v1/info").json()
+    assert info["executor"] == "local"
+    assert info["database"] == "sqlite"
+    assert info["services"] == info["services_online"] == 6
+    assert info["contract"] == 1

@@ -11,6 +11,7 @@ import { NewSearchPage } from "./pages/NewSearch";
 import { NotFoundPage } from "./pages/NotFound";
 import { ResultsPage } from "./pages/Results";
 import { ServicesPage } from "./pages/Services";
+import { SettingsPage } from "./pages/Settings";
 
 export function App() {
   const client = useQueryClient();
@@ -40,6 +41,7 @@ export function App() {
           <Route path="/investigations/:id" component={ResultsPage} />
           <Route path="/entities/:id" component={EntityPage} />
           <Route path="/services" component={ServicesPage} />
+          <Route path="/settings" component={SettingsPage} />
           <Route component={NotFoundPage} />
         </Switch>
       </Shell>

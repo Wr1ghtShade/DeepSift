@@ -4,10 +4,10 @@ import { Link, useLocation } from "wouter";
 import { ApiError, type EntityType, type ServiceInfo, api } from "../api";
 import { Choice } from "../components/Choice";
 import { detectType } from "../detect";
+import { type Depth, defaultDepth } from "../prefs";
 import { SELECTOR_TYPES, SERVICE_STATE_LABEL, TYPE_LABEL, formatRelative } from "../labels";
 
 type TypeChoice = "auto" | EntityType;
-type Depth = "0" | "1" | "2" | "3";
 
 const DEPTHS: { value: Depth; label: string }[] = [
   { value: "0", label: "Aucun pivot" },
@@ -80,7 +80,7 @@ export function NewSearchPage() {
   const services = useQuery({ queryKey: ["services"], queryFn: api.services });
   const [selector, setSelector] = useState("");
   const [choice, setChoice] = useState<TypeChoice>("auto");
-  const [depth, setDepth] = useState<Depth>("1");
+  const [depth, setDepth] = useState<Depth>(defaultDepth);
   const [name, setName] = useState("");
   const [picked, setPicked] = useState<Set<string> | null>(null);
   const [image, setImage] = useState<{ selector: string; preview: string; name: string } | null>(

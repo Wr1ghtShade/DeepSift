@@ -179,6 +179,7 @@ Base path: `/api/v1`. JSON everywhere. Timestamps are ISO 8601 in UTC.
 | `POST /blobs` | Upload an image (PNG, JPEG, GIF, WebP, 10 MiB max); returns `{ "sha256", "selector": "blob:<sha256>" }` |
 | `GET /blobs/{sha256}` | A stored image |
 | `WS /investigations/{id}/stream` | Live messages, below |
+| `GET /info` | Gateway version, contract, executor (`local` or `redis`), database, counts |
 | `GET /health` | Liveness, no auth |
 | `POST /session`, `GET /session`, `DELETE /session` | Browser login with the token, status, logout |
 | `POST /reports` | CSP violation reports (Reporting API), no auth |

@@ -15,6 +15,7 @@ from typing import Annotated, Any, Literal
 
 from deepsift_sdk.entities import SELECTOR_TYPES, EntityType
 from deepsift_sdk.local import MAX_DEPTH, discover
+from deepsift_sdk.messages import CONTRACT_VERSION
 from deepsift_sdk.storage import LocalStorage
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, WebSocket
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
@@ -23,7 +24,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from starlette.websockets import WebSocketDisconnect
 
-from . import export
+from . import __version__, export
 from .db import (
     EntityRow,
     Investigation,
@@ -283,6 +284,25 @@ def api_router() -> APIRouter:
             blocked = re.sub(r"[?#].*$", "", blocked)[:200]
             log.warning("CSP violation: %s blocked %s", directive[:60], blocked)
         return Response(status_code=204)
+
+    # -- about ------------------------------------------------------------------------
+
+    @router.get("/info")
+    async def info(gw: GatewayDep) -> dict[str, Any]:
+        """What this gateway is: version, where tasks run, which database."""
+        infos, _ = await gw.orchestrator.services()
+        async with gw.sessions() as session:
+            investigations = await session.scalar(select(func.count()).select_from(Investigation))
+        return {
+            "version": __version__,
+            "contract": CONTRACT_VERSION,
+            "executor": "redis" if isinstance(gw.executor, BusExecutor) else "local",
+            "database": gw.engine.dialect.name,
+            "services": len(infos),
+            "services_online": sum(1 for i in infos.values() if i.available),
+            "investigations": investigations or 0,
+            "session_ttl": gw.settings.session_ttl,
+        }
 
     # -- investigations ---------------------------------------------------------------
 

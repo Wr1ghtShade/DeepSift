@@ -128,6 +128,17 @@ export interface ServiceInfo {
   instances: { id: string; state: string; running: number }[];
 }
 
+export interface GatewayInfo {
+  version: string;
+  contract: number;
+  executor: "local" | "redis";
+  database: string;
+  services: number;
+  services_online: number;
+  investigations: number;
+  session_ttl: number;
+}
+
 export interface StartRun {
   selector: string;
   type?: EntityType;
@@ -184,6 +195,7 @@ export const api = {
   login: (token: string) => request<void>("/session", { method: "POST", body: json({ token }) }),
   logout: () => request<void>("/session", { method: "DELETE" }),
 
+  info: () => request<GatewayInfo>("/info"),
   investigations: () => request<InvestigationSummary[]>("/investigations"),
   investigation: (id: string) => request<Investigation>(`/investigations/${id}`),
   createInvestigation: (name: string) =>

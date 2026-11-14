@@ -13,6 +13,7 @@ const LINKS: { href: string; label: string; match: (path: string) => boolean }[]
     match: (p) => p.startsWith("/investigations") || p.startsWith("/entities"),
   },
   { href: "/services", label: "Services", match: (p) => p.startsWith("/services") },
+  { href: "/settings", label: "Réglages", match: (p) => p.startsWith("/settings") },
 ];
 
 function ServicesStatus() {
