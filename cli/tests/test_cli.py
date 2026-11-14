@@ -90,6 +90,55 @@ def test_depth_zero_skips_pivots(monkeypatch):
     assert "Avatar A" not in result.output
 
 
+def test_opt_reaches_the_service_typed_by_its_manifest(monkeypatch):
+    from fakes import FakeService, make_manifest
+
+    seen = {}
+
+    class Configurable(FakeService):
+        _manifest = make_manifest(
+            "conf",
+            options={
+                "top": {"type": "int", "default": 5},
+                "deep": {"type": "bool", "default": False},
+                "mode": {"type": "enum", "values": ["a", "b"], "default": "a"},
+            },
+        )
+
+        async def run(self, task, ctx):
+            seen.update(top=ctx.option("top"), deep=ctx.option("deep"), mode=ctx.option("mode"))
+
+    monkeypatch.setattr(main, "discover", lambda: {"conf": Configurable})
+    args = [
+        "user",
+        "alice",
+        "--opt",
+        "conf.top=0",
+        "--opt",
+        "conf.deep=yes",
+        "--opt",
+        "conf.mode=b",
+    ]
+    result = runner.invoke(main.app, args)
+    assert result.exit_code == 0, result.output
+    assert seen == {"top": 0, "deep": True, "mode": "b"}
+
+
+@pytest.mark.parametrize(
+    ("opt", "message"),
+    [
+        ("fake.nope=1", "has no option"),
+        ("ghost.top=1", "unknown service"),
+        ("fake", "service.option=value"),
+    ],
+)
+def test_bad_opt_is_an_error(monkeypatch, opt, message):
+    monkeypatch.setattr(main, "discover", fake_discover)
+    result = runner.invoke(main.app, ["user", "alice", "--opt", opt])
+    assert result.exit_code == 2
+    assert message in result.output
+
+
 def test_services_lists_installed(monkeypatch):
     monkeypatch.setattr(main, "discover", fake_discover)
     result = runner.invoke(main.app, ["services"])

@@ -6,7 +6,7 @@ import asyncio
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from deepsift_sdk import EntityType, Event, EventKind, Level
@@ -37,6 +37,13 @@ OutputOpt = Annotated[
 MinLevelOpt = Annotated[
     Level, typer.Option("--min", help="Hide findings below this confidence level.")
 ]
+OptOpt = Annotated[
+    list[str] | None,
+    typer.Option(
+        "--opt",
+        help="Service option as service.option=value, e.g. maigret.top_sites=0 (repeatable).",
+    ),
+]
 DepthOpt = Annotated[
     int,
     typer.Option(
@@ -47,6 +54,39 @@ DepthOpt = Annotated[
         help="Pivot hops: run services on what was found (0 = selector only).",
     ),
 ]
+
+
+def parse_options(pairs: list[str] | None, installed: dict) -> dict[str, dict[str, Any]]:
+    """Turn ``service.option=value`` pairs into per-service options, typed by the manifest."""
+    options: dict[str, dict[str, Any]] = {}
+    for pair in pairs or []:
+        name, _, value = pair.partition("=")
+        service, _, option = name.partition(".")
+        if not (service and option and _):
+            raise ValueError(f"--opt expects service.option=value, got {pair!r}")
+        if service not in installed:
+            raise ValueError(f"unknown service in --opt: {service}")
+        spec = installed[service].get_manifest().options.get(option)
+        if spec is None:
+            raise ValueError(f"{service} has no option {option!r}")
+        options.setdefault(service, {})[option] = _coerce(spec, value, pair)
+    return options
+
+
+def _coerce(spec: Any, value: str, pair: str) -> Any:
+    if spec.type == "int":
+        try:
+            return int(value)
+        except ValueError as exc:
+            raise ValueError(f"{pair}: expected an integer") from exc
+    if spec.type == "bool":
+        lowered = value.lower()
+        if lowered not in ("true", "false", "1", "0", "yes", "no", "on", "off"):
+            raise ValueError(f"{pair}: expected true or false")
+        return lowered in ("true", "1", "yes", "on")
+    if spec.type == "enum" and spec.values and value not in spec.values:
+        raise ValueError(f"{pair}: expected one of {', '.join(map(str, spec.values))}")
+    return value
 
 
 @dataclass
@@ -172,13 +212,19 @@ def _save(run: LocalRun, path: Path) -> None:
 
 
 async def _investigate(
-    selector: str, entity_type: EntityType | None, only: list[str] | None, depth: int
+    selector: str,
+    entity_type: EntityType | None,
+    only: list[str] | None,
+    depth: int,
+    opts: list[str] | None,
 ) -> LocalRun:
-    services = {name: cls() for name, cls in discover().items()}
+    installed = discover()
+    options = parse_options(opts, installed)
+    services = {name: cls() for name, cls in installed.items()}
     run = LocalRun(services, max_depth=depth)
     lanes: dict[str, Lane] = {}
     with Live(_lanes_table(lanes), console=console, refresh_per_second=8, transient=False) as live:
-        async for event in run.run(selector, entity_type=entity_type, only=only):
+        async for event in run.run(selector, entity_type=entity_type, only=only, options=options):
             _update(lanes, event)
             live.update(_lanes_table(lanes))
     if not lanes:
@@ -194,9 +240,10 @@ def _run(
     output: Path | None,
     min_level: Level,
     depth: int,
+    opts: list[str] | None,
 ) -> None:
     try:
-        run = asyncio.run(_investigate(selector, entity_type, services, depth))
+        run = asyncio.run(_investigate(selector, entity_type, services, depth, opts))
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         raise typer.Exit(2) from exc
@@ -218,9 +265,10 @@ def user(
     output: OutputOpt = None,
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
+    opt: OptOpt = None,
 ) -> None:
     """Look for a username."""
-    _run(username, EntityType.USERNAME, service, output, min_level, depth)
+    _run(username, EntityType.USERNAME, service, output, min_level, depth, opt)
 
 
 @app.command()
@@ -230,9 +278,10 @@ def email(
     output: OutputOpt = None,
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
+    opt: OptOpt = None,
 ) -> None:
     """Look for an email address."""
-    _run(address, EntityType.EMAIL, service, output, min_level, depth)
+    _run(address, EntityType.EMAIL, service, output, min_level, depth, opt)
 
 
 @app.command()
@@ -242,9 +291,10 @@ def phone(
     output: OutputOpt = None,
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
+    opt: OptOpt = None,
 ) -> None:
     """Look for a phone number (international format, e.g. +33612345678)."""
-    _run(number, EntityType.PHONE, service, output, min_level, depth)
+    _run(number, EntityType.PHONE, service, output, min_level, depth, opt)
 
 
 @app.command()
@@ -254,9 +304,10 @@ def domain(
     output: OutputOpt = None,
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
+    opt: OptOpt = None,
 ) -> None:
     """Look for a domain."""
-    _run(name, EntityType.DOMAIN, service, output, min_level, depth)
+    _run(name, EntityType.DOMAIN, service, output, min_level, depth, opt)
 
 
 @app.command()
@@ -266,9 +317,10 @@ def image(
     output: OutputOpt = None,
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
+    opt: OptOpt = None,
 ) -> None:
     """Look into an image URL."""
-    _run(url, EntityType.IMAGE, service, output, min_level, depth)
+    _run(url, EntityType.IMAGE, service, output, min_level, depth, opt)
 
 
 @app.command()
@@ -278,9 +330,10 @@ def search(
     output: OutputOpt = None,
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
+    opt: OptOpt = None,
 ) -> None:
     """Detect the selector's type, then run every matching service."""
-    _run(selector, None, service, output, min_level, depth)
+    _run(selector, None, service, output, min_level, depth, opt)
 
 
 @app.command()
@@ -296,7 +349,13 @@ def services() -> None:
     for name, cls in sorted(installed.items()):
         manifest = cls.get_manifest()
         missing = manifest.missing_secrets()
-        state = f"[yellow]needs {', '.join(missing)}[/]" if missing else "[green]ready[/]"
+        optional = manifest.missing_optional_secrets()
+        if missing:
+            state = f"[yellow]needs {', '.join(missing)}[/]"
+        elif optional:
+            state = f"[green]ready[/] [dim](better with {', '.join(optional)})[/]"
+        else:
+            state = "[green]ready[/]"
         table.add_row(
             name,
             manifest.version,

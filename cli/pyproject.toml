@@ -15,7 +15,17 @@ dependencies = [
 sherlock = ["deepsift-svc-sherlock"]
 maigret = ["deepsift-svc-maigret"]
 avatar-hash = ["deepsift-svc-avatar-hash"]
-all = ["deepsift-svc-sherlock", "deepsift-svc-maigret", "deepsift-svc-avatar-hash"]
+holehe = ["deepsift-svc-holehe"]
+gravatar = ["deepsift-svc-gravatar"]
+dns-mail = ["deepsift-svc-dns-mail"]
+all = [
+  "deepsift-svc-sherlock",
+  "deepsift-svc-maigret",
+  "deepsift-svc-avatar-hash",
+  "deepsift-svc-holehe",
+  "deepsift-svc-gravatar",
+  "deepsift-svc-dns-mail",
+]
 
 [project.scripts]
 deepsift = "deepsift_cli.main:app"
@@ -25,6 +35,9 @@ deepsift-sdk = { workspace = true }
 deepsift-svc-sherlock = { workspace = true }
 deepsift-svc-maigret = { workspace = true }
 deepsift-svc-avatar-hash = { workspace = true }
+deepsift-svc-holehe = { workspace = true }
+deepsift-svc-gravatar = { workspace = true }
+deepsift-svc-dns-mail = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
