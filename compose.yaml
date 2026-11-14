@@ -1,10 +1,12 @@
-# DeepSift stack — work in progress.
-# The gateway and the GUI are not built yet: for now this runs the
-# infrastructure, SearXNG and the service workers, which wait for tasks on Redis.
+# DeepSift stack — work in progress (the GUI is not built yet).
 #
 #   cp .env.example .env   # then fill in SEARXNG_SECRET and any API keys
-#   mkdir -p secrets && openssl rand -hex 24 > secrets/postgres_password.txt
+#   mkdir -p secrets
+#   openssl rand -hex 24 > secrets/postgres_password.txt
+#   openssl rand -base64 32 > secrets/api_token.txt
 #   docker compose up --build
+#
+# The API answers on http://127.0.0.1:8000 (Bearer token from secrets/api_token.txt).
 
 services:
   redis:
@@ -24,6 +26,29 @@ services:
       - postgres_password
     volumes:
       - postgres-data:/var/lib/postgresql/data
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      DEEPSIFT_REDIS_URL: redis://redis:6379/0
+      DEEPSIFT_DATABASE_URL: postgresql+asyncpg://deepsift@postgres/deepsift
+      DEEPSIFT_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+      DEEPSIFT_API_TOKEN_FILE: /run/secrets/api_token
+      DEEPSIFT_BLOBS_DIR: /data/blobs
+      DEEPSIFT_ALLOWED_ORIGINS: ${DEEPSIFT_ALLOWED_ORIGINS:-}
+    secrets:
+      - postgres_password
+      - api_token
+    volumes:
+      - blobs:/data/blobs
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - redis
+      - postgres
 
   # Your own meta-search instance, used by the searxng service. Reachable from the
   # host on 127.0.0.1:8080 only. Settings: deploy/searxng/settings.yml.
@@ -184,6 +209,8 @@ services:
 secrets:
   postgres_password:
     file: ./secrets/postgres_password.txt
+  api_token:
+    file: ./secrets/api_token.txt
 
 volumes:
   blobs:

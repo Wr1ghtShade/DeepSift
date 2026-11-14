@@ -53,3 +53,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build the ${{ matrix.service }} service image
         run: docker build -f services/${{ matrix.service }}/Dockerfile -t deepsift/svc-${{ matrix.service }} .
+
+  docker-gateway:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the gateway image
+        run: docker build -f gateway/Dockerfile -t deepsift/gateway .
+      - name: Start it and check health and security headers
+        run: |
+          docker run -d --name gw -p 127.0.0.1:8000:8000 -e DEEPSIFT_API_TOKEN=ci-token deepsift/gateway
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8000/api/v1/health && break; sleep 1; done
+          curl -fsS -H "Authorization: Bearer ci-token" http://127.0.0.1:8000/api/v1/services
+          curl -sSI http://127.0.0.1:8000/api/v1/health | grep -i "content-security-policy: default-src 'none'"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/v1/investigations)" = 401
