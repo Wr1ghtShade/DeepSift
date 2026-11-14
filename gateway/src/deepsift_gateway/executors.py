@@ -169,6 +169,7 @@ class BusExecutor:
         self._instances: dict[str, set[str]] = {}
         self._loop: asyncio.Task[None] | None = None
         self._on_event: EventHandler | None = None
+        self._stopping = False
 
     def _key(self, *parts: str) -> str:
         return self.bus._key(*parts)  # noqa: SLF001 - same package family
@@ -180,10 +181,13 @@ class BusExecutor:
         self._loop = asyncio.create_task(self._consume(events_from))
 
     async def stop(self) -> None:
+        # Some Redis client versions swallow a cancellation that lands mid-read, so
+        # the loop also checks a flag, and the wait is bounded.
+        self._stopping = True
         if self._loop is not None:
             self._loop.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await self._loop
+            with contextlib.suppress(asyncio.CancelledError, TimeoutError):
+                await asyncio.wait_for(self._loop, timeout=self.block_ms / 1000 + 2)
 
     def _registry_message(self, fields: Mapping[str, str]) -> None:
         name = fields.get("service", "")
@@ -201,7 +205,7 @@ class BusExecutor:
     async def _consume(self, events_from: str) -> None:
         streams = {self._key("events"): events_from, self._key("registry"): "0-0"}
         block = self.block_ms if self.block_ms > 0 else None
-        while True:
+        while not self._stopping:
             try:
                 response = await self.bus.redis.xread(streams, count=200, block=block)
             except asyncio.CancelledError:
