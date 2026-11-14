@@ -1,0 +1,38 @@
+contract: 1
+name: whatsapp
+version: 0.1.0
+description: >-
+  Whether a phone number has a WhatsApp account, and its public profile (picture,
+  about, business details) when the owner's privacy settings show it to everyone.
+  Uses your own dedicated WhatsApp account, linked once. Off by default.
+inputs: [phone]
+outputs: [profile, image, email]
+links: [found_on, avatar, business_email]
+mode: api
+license: MIT (Baileys)
+timeout: 90s
+concurrency: 1
+rate_limit: 1/m
+secrets: []
+enabled_by_default: false
+options:
+  min_interval:
+    type: int
+    default: 10
+    description: Minimum seconds between two lookups, to protect the linked account
+  daily_limit:
+    type: int
+    default: 50
+    description: Most lookups per day (UTC), to protect the linked account
+  fetch_picture:
+    type: bool
+    default: true
+    description: Fetch the profile picture when it is public
+  fetch_about:
+    type: bool
+    default: true
+    description: Fetch the "about" text when it is public
+  fetch_business:
+    type: bool
+    default: true
+    description: Fetch the business profile for business accounts

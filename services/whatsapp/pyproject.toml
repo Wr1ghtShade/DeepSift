@@ -1,0 +1,25 @@
+[project]
+name = "deepsift-svc-whatsapp"
+version = "0.1.0"
+description = "DeepSift service: WhatsApp presence and public profile (Python bridge to the Node service)"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.11"
+dependencies = [
+  "deepsift-sdk",
+]
+
+[project.entry-points."deepsift.services"]
+whatsapp = "deepsift_svc_whatsapp:WhatsAppService"
+
+[tool.uv.sources]
+deepsift-sdk = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/deepsift_svc_whatsapp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"manifest.yaml" = "deepsift_svc_whatsapp/manifest.yaml"
