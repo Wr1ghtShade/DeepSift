@@ -20,6 +20,7 @@ gravatar = ["deepsift-svc-gravatar"]
 dns-mail = ["deepsift-svc-dns-mail"]
 phone-meta = ["deepsift-svc-phone-meta"]
 ignorant = ["deepsift-svc-ignorant"]
+whatsapp = ["deepsift-svc-whatsapp"]
 all = [
   "deepsift-svc-sherlock",
   "deepsift-svc-maigret",
@@ -44,6 +45,7 @@ deepsift-svc-gravatar = { workspace = true }
 deepsift-svc-dns-mail = { workspace = true }
 deepsift-svc-phone-meta = { workspace = true }
 deepsift-svc-ignorant = { workspace = true }
+deepsift-svc-whatsapp = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

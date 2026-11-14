@@ -202,6 +202,24 @@ def test_describe(entity, expected):
     assert main.describe(entity) == expected
 
 
+def test_enable_turns_on_opt_in_services(monkeypatch):
+    from fakes import FakeService, make_manifest
+
+    class OptIn(FakeService):
+        _manifest = make_manifest("opt-in", enabled_by_default=False)
+
+    monkeypatch.setattr(main, "discover", lambda: {"fake": FakeService, "opt-in": OptIn})
+    result = runner.invoke(main.app, ["user", "alice"])
+    assert "opt-in" not in result.output
+    result = runner.invoke(main.app, ["user", "alice", "--enable", "opt-in"])
+    assert result.exit_code == 0, result.output
+    assert "opt-in" in result.output
+    result = runner.invoke(main.app, ["services"])
+    assert "off by default (--enable opt-in)" in result.output
+    result = runner.invoke(main.app, ["user", "alice", "--enable", "ghost"])
+    assert result.exit_code == 2
+
+
 def test_services_lists_installed(monkeypatch):
     monkeypatch.setattr(main, "discover", fake_discover)
     result = runner.invoke(main.app, ["services"])

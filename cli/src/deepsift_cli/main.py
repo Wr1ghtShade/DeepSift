@@ -44,6 +44,14 @@ OptOpt = Annotated[
         help="Service option as service.option=value, e.g. maigret.top_sites=0 (repeatable).",
     ),
 ]
+EnableOpt = Annotated[
+    list[str] | None,
+    typer.Option(
+        "--enable",
+        "-e",
+        help="Turn on a service that is off by default, e.g. whatsapp (repeatable).",
+    ),
+]
 RegionOpt = Annotated[
     str | None,
     typer.Option(
@@ -261,11 +269,12 @@ async def _investigate(
     depth: int,
     opts: list[str] | None,
     region: str | None,
+    enable: list[str] | None,
 ) -> LocalRun:
     installed = discover()
     options = parse_options(opts, installed, region)
     services = {name: cls() for name, cls in installed.items()}
-    run = LocalRun(services, max_depth=depth)
+    run = LocalRun(services, max_depth=depth, enabled=set(enable or ()))
     lanes: dict[str, Lane] = {}
     with Live(_lanes_table(lanes), console=console, refresh_per_second=8, transient=False) as live:
         async for event in run.run(selector, entity_type=entity_type, only=only, options=options):
@@ -286,9 +295,12 @@ def _run(
     depth: int,
     opts: list[str] | None,
     region: str | None = None,
+    enable: list[str] | None = None,
 ) -> None:
     try:
-        run = asyncio.run(_investigate(selector, entity_type, services, depth, opts, region))
+        run = asyncio.run(
+            _investigate(selector, entity_type, services, depth, opts, region, enable)
+        )
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         raise typer.Exit(2) from exc
@@ -311,9 +323,10 @@ def user(
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
     opt: OptOpt = None,
+    enable: EnableOpt = None,
 ) -> None:
     """Look for a username."""
-    _run(username, EntityType.USERNAME, service, output, min_level, depth, opt)
+    _run(username, EntityType.USERNAME, service, output, min_level, depth, opt, enable=enable)
 
 
 @app.command()
@@ -324,9 +337,10 @@ def email(
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
     opt: OptOpt = None,
+    enable: EnableOpt = None,
 ) -> None:
     """Look for an email address."""
-    _run(address, EntityType.EMAIL, service, output, min_level, depth, opt)
+    _run(address, EntityType.EMAIL, service, output, min_level, depth, opt, enable=enable)
 
 
 @app.command()
@@ -338,9 +352,10 @@ def phone(
     depth: DepthOpt = 1,
     opt: OptOpt = None,
     region: RegionOpt = None,
+    enable: EnableOpt = None,
 ) -> None:
     """Look for a phone number: +33612345678, or 0612345678 with --region FR."""
-    _run(number, EntityType.PHONE, service, output, min_level, depth, opt, region)
+    _run(number, EntityType.PHONE, service, output, min_level, depth, opt, region, enable)
 
 
 @app.command()
@@ -351,9 +366,10 @@ def domain(
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
     opt: OptOpt = None,
+    enable: EnableOpt = None,
 ) -> None:
     """Look for a domain."""
-    _run(name, EntityType.DOMAIN, service, output, min_level, depth, opt)
+    _run(name, EntityType.DOMAIN, service, output, min_level, depth, opt, enable=enable)
 
 
 @app.command()
@@ -364,9 +380,10 @@ def image(
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
     opt: OptOpt = None,
+    enable: EnableOpt = None,
 ) -> None:
     """Look into an image URL."""
-    _run(url, EntityType.IMAGE, service, output, min_level, depth, opt)
+    _run(url, EntityType.IMAGE, service, output, min_level, depth, opt, enable=enable)
 
 
 @app.command()
@@ -378,9 +395,10 @@ def search(
     depth: DepthOpt = 1,
     opt: OptOpt = None,
     region: RegionOpt = None,
+    enable: EnableOpt = None,
 ) -> None:
     """Detect the selector's type, then run every matching service."""
-    _run(selector, None, service, output, min_level, depth, opt, region)
+    _run(selector, None, service, output, min_level, depth, opt, region, enable)
 
 
 @app.command()
@@ -397,7 +415,9 @@ def services() -> None:
         manifest = cls.get_manifest()
         missing = manifest.missing_secrets()
         optional = manifest.missing_optional_secrets()
-        if missing:
+        if not manifest.enabled_by_default:
+            state = f"[dim]off by default (--enable {name})[/]"
+        elif missing:
             state = f"[yellow]needs {', '.join(missing)}[/]"
         elif optional:
             state = f"[green]ready[/] [dim](better with {', '.join(optional)})[/]"
