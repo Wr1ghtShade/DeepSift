@@ -21,6 +21,10 @@ def test_new_id_is_ulid_and_sortable():
         (EntityType.DOMAIN, "Example.ORG.", "example.org"),
         (EntityType.PHONE, "+33 6 12-34.56(78)", "+33612345678"),
         (EntityType.USERNAME, " NightOwl ", "NightOwl"),
+        (EntityType.PROFILE, "HTTPS://GitHub.com/NightOwl/", "https://github.com/NightOwl"),
+        (EntityType.PROFILE, "https://x.example/u?id=7#top", "https://x.example/u?id=7"),
+        (EntityType.URL, "https://example.org/", "https://example.org"),
+        (EntityType.IMAGE, "blob:abc123", "blob:abc123"),
     ],
 )
 def test_entity_values_are_normalized(entity_type, raw, expected):

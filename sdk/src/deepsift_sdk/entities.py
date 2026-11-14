@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from enum import StrEnum
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
@@ -41,11 +42,26 @@ SELECTOR_TYPES = frozenset(
 )
 
 _PHONE_KEEP = re.compile(r"[^\d+]")
+_URL_TYPES = frozenset({EntityType.URL, EntityType.PROFILE, EntityType.WEB_PAGE, EntityType.IMAGE})
+
+
+def normalize_url(value: str) -> str:
+    """Lower-case scheme and host, drop the fragment and a trailing slash.
+
+    The path and the query keep their case: many sites treat them as case-sensitive.
+    """
+    parts = urlsplit(value)
+    if parts.scheme.lower() not in ("http", "https") or not parts.netloc:
+        return value
+    path = parts.path.rstrip("/") if parts.path not in ("", "/") else ""
+    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), path, parts.query, ""))
 
 
 def normalize(entity_type: EntityType, value: str) -> str:
     """Return the canonical form of a value, used for the identity key."""
     value = value.strip()
+    if entity_type in _URL_TYPES:
+        return normalize_url(value)
     match entity_type:
         case EntityType.EMAIL | EntityType.MX_RECORD:
             return value.lower()

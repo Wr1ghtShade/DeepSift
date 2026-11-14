@@ -76,6 +76,24 @@ async def test_missing_secret_is_needs_config(username_task, monkeypatch):
     assert final.event is EventKind.COMPLETED
 
 
+async def test_found_can_link_from_an_earlier_finding(username_task):
+    from deepsift_sdk import TaskContext
+
+    events = []
+
+    async def sink(event):
+        events.append(event)
+
+    ctx = TaskContext(username_task, FakeService.get_manifest(), sink)
+    profile = Entity(type=EntityType.PROFILE, value="https://example.org/u/alice")
+    avatar = Entity(type=EntityType.IMAGE, value="https://example.org/a.png")
+    await ctx.found(profile)
+    await ctx.found(avatar, rel="avatar", parent=profile)
+    assert events[0].link.from_ == username_task.input.id
+    assert (events[1].link.from_, events[1].link.rel) == (profile.id, "avatar")
+    assert ctx.count == 2
+
+
 async def test_local_run_merges_findings_with_noisy_or():
     run = LocalRun({"fake": FakeService(), "other-fake": OtherFakeService()})
     events = [event async for event in run.run("alice")]

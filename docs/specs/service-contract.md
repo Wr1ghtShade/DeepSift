@@ -49,6 +49,7 @@ This document defines how DeepSift services talk to the gateway. Any service tha
 
 - `confidence` is the service's own estimate, from 0 to 1. The gateway combines estimates from several services into the score shown to users.
 - **Identity key:** two entities are the same when `type` and the normalized `value` are equal. The gateway merges them and keeps the list of services that found each one.
+- **URL normalization** (`url`, `profile`, `web_page`, and `image` when it is a URL): lower-case scheme and host, no fragment, no trailing slash. Path and query keep their case. So `HTTPS://GitHub.com/x/` from one service and `https://github.com/x` from another are one profile.
 
 ## 3. Manifest
 
@@ -127,7 +128,7 @@ Every event carries `contract`, `task_id`, `service` and `event`.
 |---|---|---|
 | `started` | — | The service picked up the task |
 | `progress` | `done`, `total`, `message` | Optional, drives the progress lanes in the GUI |
-| `entity` | `entity`, `link` | One finding. `link` is `{ "from": "<input id>", "rel": "found_on" }` |
+| `entity` | `entity`, `link` | One finding. `link` is `{ "from": "<id>", "rel": "found_on" }`, where `from` is the task's input or an entity the same task reported earlier (e.g. `avatar` from a profile) |
 | `completed` | `count` | No more findings for this task |
 | `failed` | `error` | See section 8 |
 

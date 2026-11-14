@@ -38,8 +38,14 @@ class TaskContext:
             return self.task.options[name]
         return self.manifest.option_default(name)
 
-    async def found(self, entity: Entity, rel: str = "found_on") -> None:
-        """Report one finding, linked from the task's input entity."""
+    async def found(
+        self, entity: Entity, rel: str = "found_on", parent: Entity | None = None
+    ) -> None:
+        """Report one finding.
+
+        It is linked from the task's input entity, or from ``parent``: an entity this
+        task reported earlier (for example a profile, for the avatar found on it).
+        """
         self.count += 1
         await self._sink(
             Event(
@@ -47,7 +53,7 @@ class TaskContext:
                 service=self.manifest.name,
                 event=EventKind.ENTITY,
                 entity=entity,
-                link=Link(from_=self.task.input.id, rel=rel),
+                link=Link(from_=(parent or self.task.input).id, rel=rel),
             )
         )
 
