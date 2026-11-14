@@ -1,6 +1,6 @@
 contract: 1
 name: sherlock
-version: 0.1.0
+version: 0.1.1
 description: Checks whether a username exists on ~400 sites (fast first pass)
 inputs: [username]
 outputs: [profile]
@@ -19,3 +19,7 @@ options:
     type: bool
     default: false
     description: Also check adult sites
+  exclude_sites:
+    type: str
+    default: ""
+    description: Sites to skip, comma-separated Sherlock names (e.g. "Discord.bio, Fiverr")

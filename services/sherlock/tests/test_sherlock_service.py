@@ -77,3 +77,32 @@ async def test_sherlock_crash_is_an_upstream_error(monkeypatch):
     final = await execute(svc.SherlockService(), task, sink)
     assert final.error.code is ErrorCode.UPSTREAM_ERROR
     assert final.error.retryable is True
+
+
+def test_broken_site_definitions_are_fixed():
+    discord_bio = svc._site_data(False)["Discord.bio"]
+    assert "User not found" in discord_bio["errorMsg"]
+    # The fix must not leak into Sherlock's own cached objects between calls.
+    assert svc._site_data(False)["Discord.bio"]["errorMsg"].count("User not found") == 1
+
+
+async def test_excluded_sites_are_not_scanned(monkeypatch):
+    seen = {}
+
+    def capture(username, site_data, query_notify, timeout=60):
+        seen.update(site_data)
+        return {}
+
+    monkeypatch.setattr(svc, "sherlock", capture)
+    task = Task(
+        service="sherlock",
+        input=Entity(type=EntityType.USERNAME, value="nightowl_77"),
+        options={"exclude_sites": "discord.bio, GitHub"},
+    )
+
+    async def sink(event):
+        pass
+
+    await execute(svc.SherlockService(), task, sink)
+    assert seen and "Discord.bio" not in seen and "GitHub" not in seen
+    assert "GitLab" in seen

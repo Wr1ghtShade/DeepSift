@@ -26,6 +26,14 @@ CONFIDENCE = 0.6
 PROGRESS_EVERY = 25
 _VALID_USERNAME = re.compile(r"^[^\s/?#{}]{1,64}$")
 
+#: Fixes for site definitions that are wrong in the bundled Sherlock data and turn
+#: every username into a hit. Each entry is merged into the site's definition.
+#: Report them upstream too: https://github.com/sherlock-project/sherlock/issues
+SITE_FIXES: dict[str, dict[str, Any]] = {
+    # The API now answers {"error":"User not found"} (HTTP 200) instead of a 500 page.
+    "Discord.bio": {"errorMsg": ["<title>Server Error (500)</title>", "User not found"]},
+}
+
 
 @cache
 def _site_data(include_nsfw: bool) -> dict[str, dict[str, Any]]:
@@ -37,7 +45,15 @@ def _site_data(include_nsfw: bool) -> dict[str, dict[str, Any]]:
     sites = SitesInformation(data_file_path=str(data_file), honor_exclusions=False)
     if not include_nsfw:
         sites.remove_nsfw_sites()
-    return {site.name: site.information for site in sites}
+    data = {site.name: dict(site.information) for site in sites}
+    for name, fix in SITE_FIXES.items():
+        if name in data:
+            data[name].update(fix)
+    return data
+
+
+def _excluded(option: str | None) -> set[str]:
+    return {name.strip().lower() for name in (option or "").split(",") if name.strip()}
 
 
 class _Relay(QueryNotify):
@@ -68,6 +84,9 @@ class SherlockService(Service):
             raise ServiceError(ErrorCode.INVALID_INPUT, "username has unsupported characters")
 
         site_data = await asyncio.to_thread(_site_data, bool(ctx.option("include_nsfw")))
+        excluded = _excluded(ctx.option("exclude_sites"))
+        if excluded:
+            site_data = {k: v for k, v in site_data.items() if k.lower() not in excluded}
         total = len(site_data)
         loop = asyncio.get_running_loop()
         queue: asyncio.Queue[QueryResult] = asyncio.Queue()
