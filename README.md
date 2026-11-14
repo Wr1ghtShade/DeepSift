@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo/deepsift-mark-dark.svg">
+    <img src="assets/logo/deepsift-mark-light.svg" alt="DeepSift logo" width="120">
+  </picture>
+</p>
+
 # DeepSift
 
 > **🚧 Work in progress.** DeepSift is in early development. Nothing is usable yet: the repository currently holds the design and the service contract. Expect breaking changes.

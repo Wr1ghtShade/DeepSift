@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DeepSift">
+  <title>DeepSift</title>
+  <circle cx="32" cy="32" r="27" fill="none" stroke="#ECEDF0" stroke-width="4"/>
+  <circle cx="16" cy="24" r="2.2" fill="#6B7180"/>
+  <circle cx="16" cy="32" r="2.2" fill="#6B7180"/>
+  <circle cx="16" cy="40" r="2.2" fill="#6B7180"/>
+  <circle cx="24" cy="16" r="2.2" fill="#6B7180"/>
+  <circle cx="24" cy="24" r="2.2" fill="#6B7180"/>
+  <circle cx="24" cy="32" r="2.2" fill="#6B7180"/>
+  <circle cx="24" cy="40" r="2.2" fill="#6B7180"/>
+  <circle cx="24" cy="48" r="2.2" fill="#6B7180"/>
+  <circle cx="32" cy="16" r="2.2" fill="#6B7180"/>
+  <circle cx="32" cy="24" r="2.2" fill="#6B7180"/>
+  <circle cx="32" cy="32" r="2.2" fill="#6B7180"/>
+  <circle cx="32" cy="40" r="2.2" fill="#6B7180"/>
+  <circle cx="32" cy="48" r="2.2" fill="#6B7180"/>
+  <circle cx="40" cy="16" r="2.2" fill="#6B7180"/>
+  <circle cx="40" cy="24" r="2.2" fill="#6B7180"/>
+  <circle cx="40" cy="32" r="2.2" fill="#6B7180"/>
+  <circle cx="40" cy="40" r="4.2" fill="#9D8CFF"/>
+  <circle cx="40" cy="48" r="2.2" fill="#6B7180"/>
+  <circle cx="48" cy="24" r="2.2" fill="#6B7180"/>
+  <circle cx="48" cy="32" r="2.2" fill="#6B7180"/>
+  <circle cx="48" cy="40" r="2.2" fill="#6B7180"/>
+</svg>
