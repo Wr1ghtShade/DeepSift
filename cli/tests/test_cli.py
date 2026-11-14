@@ -2,11 +2,19 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from deepsift_cli import main
 from fakes import FakeService, OtherFakeService
+from rich.console import Console
 from typer.testing import CliRunner
 
 runner = CliRunner()
+
+
+@pytest.fixture(autouse=True)
+def wide_console(monkeypatch):
+    """A wide terminal, so URLs are not folded across lines in the output."""
+    monkeypatch.setattr(main, "console", Console(width=220))
 
 
 def fake_discover():
@@ -45,6 +53,41 @@ def test_selector_type_with_no_service(monkeypatch):
     result = runner.invoke(main.app, ["search", "john@example.org"])
     assert result.exit_code == 0
     assert "No installed service accepts email" in result.output
+
+
+def test_avatar_groups_show_in_table_and_json(monkeypatch, tmp_path):
+    from fakes import AvatarProfileService, FakeHashService
+
+    monkeypatch.setattr(
+        main,
+        "discover",
+        lambda: {"avatar-profiles": AvatarProfileService, "fake-hash": FakeHashService},
+    )
+    out = tmp_path / "findings.json"
+    result = runner.invoke(main.app, ["user", "alice", "-o", str(out)])
+    assert result.exit_code == 0, result.output
+    assert "Avatar A: same picture on" in result.output
+    assert "phash:" not in result.output  # correlation entities stay out of the table
+    saved = json.loads(out.read_text())
+    assert saved["avatar_groups"][0]["name"] == "A"
+    assert any(link["rel"] == "avatar" for link in saved["links"])
+    grouped = [f for f in saved["findings"] if f["avatar_group"] == "A"]
+    assert len(grouped) == 2
+    assert all(f["score"] == 0.75 for f in grouped)
+
+
+def test_depth_zero_skips_pivots(monkeypatch):
+    from fakes import AvatarProfileService, FakeHashService
+
+    monkeypatch.setattr(
+        main,
+        "discover",
+        lambda: {"avatar-profiles": AvatarProfileService, "fake-hash": FakeHashService},
+    )
+    result = runner.invoke(main.app, ["user", "alice", "--depth", "0"])
+    assert result.exit_code == 0, result.output
+    assert "fake-hash" not in result.output
+    assert "Avatar A" not in result.output
 
 
 def test_services_lists_installed(monkeypatch):
