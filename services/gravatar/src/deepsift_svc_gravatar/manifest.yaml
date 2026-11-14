@@ -1,0 +1,14 @@
+contract: 1
+name: gravatar
+version: 0.1.0
+description: Public Gravatar profile, avatar and verified accounts of an email address
+inputs: [email]
+outputs: [profile, image, identity]
+links: [found_on, avatar, identity, verified_account]
+mode: api
+license: Gravatar API terms
+timeout: 30s
+concurrency: 4
+rate_limit: 1/s
+secrets: []
+optional_secrets: [GRAVATAR_API_KEY]

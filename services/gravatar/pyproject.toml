@@ -1,0 +1,23 @@
+[project]
+name = "deepsift-svc-gravatar"
+version = "0.1.0"
+description = "DeepSift service: public Gravatar profile and avatar of an email address"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.11"
+dependencies = [
+  "deepsift-sdk",
+  "httpx>=0.27",
+]
+
+[project.entry-points."deepsift.services"]
+gravatar = "deepsift_svc_gravatar:GravatarService"
+
+[tool.uv.sources]
+deepsift-sdk = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/deepsift_svc_gravatar"]
