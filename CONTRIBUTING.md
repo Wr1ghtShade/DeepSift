@@ -20,7 +20,7 @@ OSINT investigation console: CLI + web GUI on a micro-service architecture. The 
 
 The repo is a uv workspace: `sdk/` (deepsift-sdk), `cli/` (deepsift), `gateway/` (deepsift-gateway) and each `services/<name>/` (deepsift-svc-<name>) are packages with a `src/` layout. A new service must be added to `members` and `[tool.uv.sources]` in the root `pyproject.toml`, and to `testpaths`.
 
-Commands: `uv sync`, `uv run ruff check .`, `uv run ruff format .`, `uv run pytest`; GUI: `cd gui && npm test && npm run build`. Tests must not need the network: replace external calls with fakes (see `services/sherlock/tests`). Shared test fakes live in `sdk/tests/fakes.py`.
+Commands: `uv sync`, `uv run ruff check .`, `uv run ruff format .`, `uv run pytest`; GUI: `cd gui && npm test && npm run build`, browser check `npm run e2e` (see `gui/README.md`). Tests must not need the network: replace external calls with fakes (see `services/sherlock/tests`). Shared test fakes live in `sdk/tests/fakes.py`.
 
 ## Code
 

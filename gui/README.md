@@ -25,6 +25,12 @@ npm test            # unit tests (Vitest)
 npm run build       # type check, then gui/dist
 ```
 
+Browser check (what CI runs): with a build in `gui/dist`, start
+`uv run python gui/e2e/server.py` (gateway with fake services on port 8800), then
+`npm run e2e` (add `-- --screenshots DIR` to keep pictures). It needs Chrome
+(`CHROME_PATH`, default `/usr/bin/google-chrome`) and fails on any CSP violation or
+console error.
+
 To try the build: `npm run build`, then `DEEPSIFT_GUI_DIR=gui/dist uv run deepsift-gateway`.
 
 ## Choices

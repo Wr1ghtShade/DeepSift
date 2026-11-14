@@ -59,6 +59,33 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  gui-e2e:
+    runs-on: ubuntu-latest
+    needs: [gui]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: gui/package-lock.json
+      - run: uv sync
+      - run: cd gui && npm ci && npm run build
+      - name: Start a gateway with fake services and the built GUI
+        run: |
+          uv run python gui/e2e/server.py > gateway.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8800/api/v1/health && break; sleep 1; done
+      - name: Drive the GUI in headless Chrome under the real CSP
+        run: cd gui && node e2e/check.mjs --screenshots ../e2e-screenshots
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-e2e
+          path: |
+            e2e-screenshots/
+            gateway.log
+
   docker:
     runs-on: ubuntu-latest
     needs: [test, node]
