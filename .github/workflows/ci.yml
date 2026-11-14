@@ -43,6 +43,22 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  gui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: gui/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
   docker:
     runs-on: ubuntu-latest
     needs: [test, node]
@@ -56,7 +72,7 @@ jobs:
 
   docker-gateway:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [test, gui]
     steps:
       - uses: actions/checkout@v4
       - name: Build the gateway image
@@ -68,3 +84,6 @@ jobs:
           curl -fsS -H "Authorization: Bearer ci-token" http://127.0.0.1:8000/api/v1/services
           curl -sSI http://127.0.0.1:8000/api/v1/health | grep -i "content-security-policy: default-src 'none'"
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/v1/investigations)" = 401
+          curl -fsS -D headers.txt -o index.html http://127.0.0.1:8000/
+          grep -i "content-security-policy: script-src 'nonce-" headers.txt
+          grep -q 'nonce="' index.html && ! grep -q '__CSP_NONCE__' index.html

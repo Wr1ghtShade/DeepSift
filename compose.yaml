@@ -1,4 +1,4 @@
-# DeepSift stack — work in progress (the GUI is not built yet).
+# DeepSift stack — work in progress.
 #
 #   cp .env.example .env   # then fill in SEARXNG_SECRET and any API keys
 #   mkdir -p secrets
@@ -6,7 +6,7 @@
 #   openssl rand -base64 32 > secrets/api_token.txt
 #   docker compose up --build
 #
-# The API answers on http://127.0.0.1:8000 (Bearer token from secrets/api_token.txt).
+# Open http://127.0.0.1:8000 and log in with the token from secrets/api_token.txt.
 
 services:
   redis:
