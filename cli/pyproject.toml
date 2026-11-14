@@ -18,6 +18,8 @@ avatar-hash = ["deepsift-svc-avatar-hash"]
 holehe = ["deepsift-svc-holehe"]
 gravatar = ["deepsift-svc-gravatar"]
 dns-mail = ["deepsift-svc-dns-mail"]
+phone-meta = ["deepsift-svc-phone-meta"]
+ignorant = ["deepsift-svc-ignorant"]
 all = [
   "deepsift-svc-sherlock",
   "deepsift-svc-maigret",
@@ -25,6 +27,8 @@ all = [
   "deepsift-svc-holehe",
   "deepsift-svc-gravatar",
   "deepsift-svc-dns-mail",
+  "deepsift-svc-phone-meta",
+  "deepsift-svc-ignorant",
 ]
 
 [project.scripts]
@@ -38,6 +42,8 @@ deepsift-svc-avatar-hash = { workspace = true }
 deepsift-svc-holehe = { workspace = true }
 deepsift-svc-gravatar = { workspace = true }
 deepsift-svc-dns-mail = { workspace = true }
+deepsift-svc-phone-meta = { workspace = true }
+deepsift-svc-ignorant = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

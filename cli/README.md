@@ -7,6 +7,7 @@ deepsift services                         # installed services and their state
 deepsift user nightowl_77                 # username
 deepsift email john@example.org           # email
 deepsift phone +33612345678               # phone number
+deepsift phone 0612345678 --region FR     # national format
 deepsift domain example.org               # domain
 deepsift image https://example.org/a.png  # image URL
 deepsift search <anything>                # detect the type, then run matching services

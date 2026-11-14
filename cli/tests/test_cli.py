@@ -4,6 +4,7 @@ import json
 
 import pytest
 from deepsift_cli import main
+from deepsift_sdk import Entity, EntityType
 from fakes import FakeService, OtherFakeService
 from rich.console import Console
 from typer.testing import CliRunner
@@ -137,6 +138,68 @@ def test_bad_opt_is_an_error(monkeypatch, opt, message):
     result = runner.invoke(main.app, ["user", "alice", "--opt", opt])
     assert result.exit_code == 2
     assert message in result.output
+
+
+def test_region_fills_default_region_where_declared(monkeypatch):
+    from fakes import FakeService, make_manifest
+
+    seen = {}
+
+    class Phoney(FakeService):
+        _manifest = make_manifest(
+            "phoney",
+            inputs=["phone"],
+            options={"default_region": {"type": "str", "default": ""}},
+        )
+
+        async def run(self, task, ctx):
+            seen["region"] = ctx.option("default_region")
+
+    monkeypatch.setattr(main, "discover", lambda: {"phoney": Phoney, "fake": FakeService})
+    result = runner.invoke(main.app, ["phone", "0612345678", "--region", "fr"])
+    assert result.exit_code == 0, result.output
+    assert seen == {"region": "FR"}
+    result = runner.invoke(main.app, ["phone", "0612345678", "--region", "France"])
+    assert result.exit_code == 2
+
+
+@pytest.mark.parametrize(
+    ("entity", "expected"),
+    [
+        (
+            Entity(
+                type=EntityType.PHONE_META,
+                value="+33612345678",
+                attributes={
+                    "international": "+33 6 12 34 56 78",
+                    "country_name": "France",
+                    "line_type": "mobile",
+                    "carrier": "Orange",
+                    "valid": True,
+                },
+            ),
+            ("phone", "+33 6 12 34 56 78 (France, mobile, first carrier Orange)"),
+        ),
+        (
+            Entity(
+                type=EntityType.MX_RECORD,
+                value="aspmx.l.google.com",
+                attributes={"priority": 1, "provider": "Google Workspace"},
+            ),
+            ("mail server", "aspmx.l.google.com (priority 1, Google Workspace)"),
+        ),
+        (
+            Entity(
+                type=EntityType.ACCOUNT,
+                value="github.com:a@b.org",
+                attributes={"site": "github.com"},
+            ),
+            ("github.com", "registered"),
+        ),
+    ],
+)
+def test_describe(entity, expected):
+    assert main.describe(entity) == expected
 
 
 def test_services_lists_installed(monkeypatch):

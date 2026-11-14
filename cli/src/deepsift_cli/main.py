@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Annotated, Any
 
 import typer
-from deepsift_sdk import EntityType, Event, EventKind, Level
+from deepsift_sdk import Entity, EntityType, Event, EventKind, Level
 from deepsift_sdk.local import MAX_DEPTH, LocalRun, discover
 from rich.console import Console
 from rich.live import Live
@@ -44,6 +44,13 @@ OptOpt = Annotated[
         help="Service option as service.option=value, e.g. maigret.top_sites=0 (repeatable).",
     ),
 ]
+RegionOpt = Annotated[
+    str | None,
+    typer.Option(
+        "--region",
+        help="Country for numbers without +code, e.g. FR (sets every service's default_region).",
+    ),
+]
 DepthOpt = Annotated[
     int,
     typer.Option(
@@ -56,9 +63,20 @@ DepthOpt = Annotated[
 ]
 
 
-def parse_options(pairs: list[str] | None, installed: dict) -> dict[str, dict[str, Any]]:
-    """Turn ``service.option=value`` pairs into per-service options, typed by the manifest."""
+def parse_options(
+    pairs: list[str] | None, installed: dict, region: str | None = None
+) -> dict[str, dict[str, Any]]:
+    """Turn ``service.option=value`` pairs into per-service options, typed by the manifest.
+
+    ``region`` fills ``default_region`` for every service that has it, unless set by a pair.
+    """
     options: dict[str, dict[str, Any]] = {}
+    if region:
+        if len(region) != 2 or not region.isalpha():
+            raise ValueError(f"--region expects a two-letter country code, got {region!r}")
+        for name, cls in installed.items():
+            if "default_region" in cls.get_manifest().options:
+                options.setdefault(name, {})["default_region"] = region.upper()
     for pair in pairs or []:
         name, _, value = pair.partition("=")
         service, _, option = name.partition(".")
@@ -161,18 +179,43 @@ def _results_table(run: LocalRun, min_level: Level) -> Table:
     for finding in run.findings:
         if finding.level not in keep or finding.entity.type in HIDDEN_TYPES:
             continue
-        entity = finding.entity
-        site = str(entity.attributes.get("site", entity.type.value))
-        if entity.type is EntityType.IDENTITY:
-            site = f"name ({site})"
+        site, value = describe(finding.entity)
         table.add_row(
             site,
-            entity.value,
+            value,
             ", ".join(sorted(finding.sources)),
             Text(finding.avatar_group or "", style="bold cyan"),
             Text(f"{finding.level.value} ({finding.score:.2f})", style=LEVEL_STYLE[finding.level]),
         )
     return table
+
+
+def describe(entity: Entity) -> tuple[str, str]:
+    """The Site and Value columns for one entity."""
+    attrs = entity.attributes
+    match entity.type:
+        case EntityType.IDENTITY:
+            return f"name ({attrs.get('site', '?')})", entity.value
+        case EntityType.PHONE_META:
+            details = [
+                attrs.get("country_name") or attrs.get("country"),
+                attrs.get("area"),
+                attrs.get("line_type", "").replace("_", " "),
+                attrs.get("carrier") and f"first carrier {attrs['carrier']}",
+                None if attrs.get("valid", True) else "INVALID",
+            ]
+            return (
+                "phone",
+                f"{attrs.get('international', entity.value)} ({', '.join(filter(None, details))})",
+            )
+        case EntityType.MX_RECORD:
+            provider = attrs.get("provider")
+            label = f"{entity.value} (priority {attrs.get('priority')}"
+            return "mail server", label + (f", {provider})" if provider else ")")
+        case EntityType.ACCOUNT:
+            return str(attrs.get("site", "account")), "registered"
+        case _:
+            return str(attrs.get("site", entity.type.value)), entity.value
 
 
 def _groups_note(run: LocalRun) -> str:
@@ -217,9 +260,10 @@ async def _investigate(
     only: list[str] | None,
     depth: int,
     opts: list[str] | None,
+    region: str | None,
 ) -> LocalRun:
     installed = discover()
-    options = parse_options(opts, installed)
+    options = parse_options(opts, installed, region)
     services = {name: cls() for name, cls in installed.items()}
     run = LocalRun(services, max_depth=depth)
     lanes: dict[str, Lane] = {}
@@ -241,9 +285,10 @@ def _run(
     min_level: Level,
     depth: int,
     opts: list[str] | None,
+    region: str | None = None,
 ) -> None:
     try:
-        run = asyncio.run(_investigate(selector, entity_type, services, depth, opts))
+        run = asyncio.run(_investigate(selector, entity_type, services, depth, opts, region))
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         raise typer.Exit(2) from exc
@@ -292,9 +337,10 @@ def phone(
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
     opt: OptOpt = None,
+    region: RegionOpt = None,
 ) -> None:
-    """Look for a phone number (international format, e.g. +33612345678)."""
-    _run(number, EntityType.PHONE, service, output, min_level, depth, opt)
+    """Look for a phone number: +33612345678, or 0612345678 with --region FR."""
+    _run(number, EntityType.PHONE, service, output, min_level, depth, opt, region)
 
 
 @app.command()
@@ -331,9 +377,10 @@ def search(
     min_level: MinLevelOpt = Level.LOW,
     depth: DepthOpt = 1,
     opt: OptOpt = None,
+    region: RegionOpt = None,
 ) -> None:
     """Detect the selector's type, then run every matching service."""
-    _run(selector, None, service, output, min_level, depth, opt)
+    _run(selector, None, service, output, min_level, depth, opt, region)
 
 
 @app.command()
