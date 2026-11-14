@@ -55,21 +55,54 @@ Results from several services are de-duplicated and scored: a profile found by t
 
 Each service publishes a manifest (what it accepts, what it returns) and registers itself at startup. The GUI and CLI discover it automatically.
 
-## Try it (development)
+## Installation
 
-DeepSift is not on PyPI yet. From a clone, with [uv](https://docs.astral.sh/uv/):
+DeepSift is not on PyPI yet: install from a clone.
+
+| You need | For |
+|---|---|
+| [uv](https://docs.astral.sh/uv/) and Python 3.11+ | CLI and gateway without Docker |
+| Node.js 22 | Building the GUI without Docker; the `whatsapp` service |
+| Docker with Compose | The full stack |
+
+```
+git clone https://github.com/Wr1ghtShade/DeepSift.git
+cd DeepSift
+```
+
+### Option A: the full stack in Docker (GUI included)
+
+```
+cp .env.example .env                       # set SEARXNG_SECRET (openssl rand -hex 32) and any API keys
+mkdir -p secrets
+openssl rand -hex 24 > secrets/postgres_password.txt
+openssl rand -base64 32 > secrets/api_token.txt
+docker compose up -d --build
+```
+
+Open http://127.0.0.1:8000 and log in with the token in `secrets/api_token.txt`. Telegram and WhatsApp are off: read `services/telegram/README.md` and `services/whatsapp/README.md` first.
+
+### Option B: CLI only, on your machine
 
 ```
 uv sync
-uv run deepsift services
+uv run deepsift services                   # what is installed and what each service still needs
 uv run deepsift user nightowl_77 -o findings.json
 ```
 
-Some services need settings or keys: copy `.env.example` to `.env` and fill in what you use. For web mentions, run your own SearXNG (see the header of `compose.yaml`), then `export SEARXNG_URL=http://127.0.0.1:8080`. `deepsift services` shows what each service still needs.
+The CLI reads settings from the environment, not from `.env`: load it with `set -a; . ./.env; set +a`. For web mentions you need a SearXNG instance (`docker compose up -d searxng`, then `SEARXNG_URL=http://127.0.0.1:8080`).
 
-To run the API and the GUI: build the GUI once (`cd gui && npm install && npm run build`), then `DEEPSIFT_GUI_DIR=gui/dist uv run deepsift-gateway` and open http://127.0.0.1:8000 (tasks run in-process; the token is written to `~/.local/share/deepsift/api-token`), or `docker compose up --build` for the full stack with Redis, PostgreSQL and one worker per service. See [`gateway/README.md`](gateway/README.md).
+### Option C: gateway and GUI, without Docker
 
-In Docker, the gateway image already contains the GUI. Releases (tag `v*`) build every package, the gateway wheel with the GUI inside, ready for `pipx install deepsift` and `pipx install "deepsift-gateway[services]"` once published on PyPI.
+```
+uv sync
+cd gui && npm ci && npm run build && cd ..
+DEEPSIFT_GUI_DIR=gui/dist uv run deepsift-gateway
+```
+
+Open http://127.0.0.1:8000. The token is in `~/.local/share/deepsift/api-token`. Services run inside the gateway; data goes to SQLite in the same folder. The CLI can use this gateway too: `uv run deepsift --gateway http://127.0.0.1:8000 user nightowl_77`.
+
+More: [`gateway/README.md`](gateway/README.md), [`cli/README.md`](cli/README.md), [`gui/README.md`](gui/README.md).
 
 ## Development
 
