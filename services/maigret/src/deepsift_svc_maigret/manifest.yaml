@@ -1,0 +1,29 @@
+contract: 1
+name: maigret
+version: 0.1.0
+description: Deep username search on up to 3000+ sites, with profile data extraction
+inputs: [username]
+outputs: [profile, identity, image]
+links: [found_on, identity, avatar]
+mode: library
+license: MIT
+timeout: 600s
+concurrency: 1
+secrets: []
+options:
+  top_sites:
+    type: int
+    default: 500
+    description: Check the N most popular sites; 0 means all sites
+  site_timeout:
+    type: int
+    default: 10
+    description: Seconds to wait for each site
+  parse_profiles:
+    type: bool
+    default: true
+    description: Read profile pages to extract name, bio, location and avatar
+  max_connections:
+    type: int
+    default: 50
+    description: Parallel connections

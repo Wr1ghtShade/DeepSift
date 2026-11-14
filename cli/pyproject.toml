@@ -13,6 +13,8 @@ dependencies = [
 
 [project.optional-dependencies]
 sherlock = ["deepsift-svc-sherlock"]
+maigret = ["deepsift-svc-maigret"]
+all = ["deepsift-svc-sherlock", "deepsift-svc-maigret"]
 
 [project.scripts]
 deepsift = "deepsift_cli.main:app"
@@ -20,6 +22,7 @@ deepsift = "deepsift_cli.main:app"
 [tool.uv.sources]
 deepsift-sdk = { workspace = true }
 deepsift-svc-sherlock = { workspace = true }
+deepsift-svc-maigret = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
