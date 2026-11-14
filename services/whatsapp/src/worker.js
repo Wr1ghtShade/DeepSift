@@ -42,7 +42,11 @@ export async function serve({ url, prefix = "deepsift", isReady, handle, signal,
   const beat = async () => {
     await client.set(
       `${prefix}:heartbeat:${name}:${instance}`,
-      JSON.stringify({ state: state(), running }),
+      JSON.stringify({
+        state: state(),
+        running,
+        missing: isReady() ? [] : ["link the account: deepsift-whatsapp link"],
+      }),
       { EX: HEARTBEAT_TTL_S },
     );
   };

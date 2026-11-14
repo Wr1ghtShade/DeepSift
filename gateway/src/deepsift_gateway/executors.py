@@ -36,6 +36,7 @@ class Instance:
     id: str
     state: str
     running: int = 0
+    missing: tuple[str, ...] = ()
 
 
 @dataclass
@@ -142,7 +143,11 @@ class LocalExecutor:
     async def services(self) -> dict[str, ServiceInfo]:
         result = {}
         for name, service in self._services.items():
-            missing = service.manifest.missing_secrets()
+            try:
+                extra = await service.missing_setup()
+            except Exception:  # noqa: BLE001
+                extra = ["setup check failed: see the gateway logs"]
+            missing = [*service.manifest.missing_secrets(), *extra]
             running = self._running[name]
             busy = running >= service.manifest.concurrency
             state = "needs_config" if missing else ("busy" if busy else "ready")
@@ -254,8 +259,14 @@ class BusExecutor:
                 data = json.loads(raw)
             except ValueError:
                 continue
+            raw_missing = data.get("missing") or []
             found.setdefault(service, []).append(
-                Instance(instance, str(data.get("state", "ready")), int(data.get("running", 0)))
+                Instance(
+                    instance,
+                    str(data.get("state", "ready")),
+                    int(data.get("running", 0)),
+                    tuple(str(m) for m in raw_missing if isinstance(m, str))[:10],
+                )
             )
         return found
 
@@ -271,5 +282,10 @@ class BusExecutor:
                 state = "ready" if "ready" in states else "busy"
             else:
                 state = "needs_config"
-            result[name] = ServiceInfo(manifest=manifest, state=state, instances=instances)
+            missing = (
+                sorted({m for i in instances for m in i.missing}) if state == "needs_config" else []
+            )
+            result[name] = ServiceInfo(
+                manifest=manifest, state=state, instances=instances, missing=missing
+            )
         return result

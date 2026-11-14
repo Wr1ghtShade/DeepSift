@@ -88,7 +88,7 @@ openssl rand -base64 32 > secrets/api_token.txt
 docker compose up -d --build
 ```
 
-Open http://127.0.0.1:47800 and log in with the token in `secrets/api_token.txt`. Telegram and WhatsApp are off: read `services/telegram/README.md` and `services/whatsapp/README.md` first.
+Open http://127.0.0.1:47800 and log in with the token in `secrets/api_token.txt`. Telegram and WhatsApp run too, but stay unchecked and idle until you link a dedicated account: read `services/telegram/README.md` and `services/whatsapp/README.md`.
 
 ### Option B: CLI only, on your machine
 

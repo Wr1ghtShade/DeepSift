@@ -33,5 +33,11 @@ class Bus(Protocol):
     async def deregister(self, manifest: Manifest, instance_id: str) -> None: ...
 
     async def heartbeat(
-        self, service: str, instance_id: str, state: str, running: int, ttl: int
+        self,
+        service: str,
+        instance_id: str,
+        state: str,
+        running: int,
+        ttl: int,
+        missing: list[str] | None = None,
     ) -> None: ...

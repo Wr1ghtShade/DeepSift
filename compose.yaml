@@ -171,11 +171,10 @@ services:
     depends_on:
       - redis
 
-  # Off by default: read services/telegram/README.md, then
-  #   docker compose --profile telegram run --rm svc-telegram deepsift-telegram login
-  #   docker compose --profile telegram up -d svc-telegram
+  # Runs, but stays unchecked in the GUI and idle until set up (read
+  # services/telegram/README.md): TELEGRAM_API_ID/HASH in .env, then once
+  #   docker compose up -d svc-telegram && docker compose exec -it svc-telegram deepsift-telegram login
   svc-telegram:
-    profiles: [telegram]
     build:
       context: .
       dockerfile: services/telegram/Dockerfile
@@ -190,11 +189,10 @@ services:
     depends_on:
       - redis
 
-  # Off by default: read services/whatsapp/README.md, then
-  #   docker compose --profile whatsapp run --rm svc-whatsapp link --phone +33…
-  #   docker compose --profile whatsapp up -d svc-whatsapp
+  # Runs, but stays unchecked in the GUI and idle until linked (read
+  # services/whatsapp/README.md), once:
+  #   docker compose exec svc-whatsapp node src/cli.js link --phone +33… && docker compose restart svc-whatsapp
   svc-whatsapp:
-    profiles: [whatsapp]
     build:
       context: .
       dockerfile: services/whatsapp/Dockerfile

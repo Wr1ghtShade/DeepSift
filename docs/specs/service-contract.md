@@ -94,7 +94,7 @@ Rules:
 Transport is Redis. All keys are prefixed with `deepsift:`.
 
 1. At startup, the service writes its manifest to the stream `deepsift:registry` with `event: register`.
-2. Every 15 s it sets `deepsift:heartbeat:<name>:<instance_id>` with a 45 s TTL. The value holds `state` (`ready`, `busy`, `needs_config`) and the number of running tasks.
+2. Every 15 s it sets `deepsift:heartbeat:<name>:<instance_id>` with a 45 s TTL. The value holds `state` (`ready`, `busy`, `needs_config`), the number of running tasks and `missing`: what is still to do (secrets from the manifest, plus `Service.missing_setup()` such as a login). A `needs_config` worker checks again at every heartbeat and starts taking tasks once nothing is missing, without a restart.
 3. On shutdown it writes `event: deregister`.
 
 The gateway reads the registry stream and the heartbeats. A service with no live heartbeat is shown as offline.

@@ -49,6 +49,16 @@ class MemoryBus:
         self.registry.pop(manifest.name, None)
 
     async def heartbeat(
-        self, service: str, instance_id: str, state: str, running: int, ttl: int
+        self,
+        service: str,
+        instance_id: str,
+        state: str,
+        running: int,
+        ttl: int,
+        missing: list[str] | None = None,
     ) -> None:
-        self.heartbeats[(service, instance_id)] = {"state": state, "running": running}
+        self.heartbeats[(service, instance_id)] = {
+            "state": state,
+            "running": running,
+            "missing": missing or [],
+        }

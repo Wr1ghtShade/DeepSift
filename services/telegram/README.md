@@ -35,10 +35,13 @@ deepsift user nightowl_77 --enable telegram
 
 In Docker, the keys come from your `.env` and the session lives in the `telegram-data` volume:
 
+The service runs with the stack but stays unchecked and idle until it is set up. Put `TELEGRAM_API_ID` and `TELEGRAM_API_HASH` in `.env`, then once:
+
 ```
-docker compose --profile telegram run --rm svc-telegram deepsift-telegram login
-docker compose --profile telegram up -d svc-telegram
+docker compose up -d svc-telegram && docker compose exec -it svc-telegram deepsift-telegram login
 ```
+
+It starts taking tasks within 15 s of the login, without a restart.
 
 ## What it reports
 

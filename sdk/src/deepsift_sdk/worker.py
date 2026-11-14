@@ -40,20 +40,39 @@ async def serve(
     manifest = service.manifest
     instance = instance_id or f"{socket.gethostname()}-{new_id()[-6:].lower()}"
     stop = stop or asyncio.Event()
-    state = "needs_config" if manifest.missing_secrets() else "ready"
     running: set[asyncio.Task[None]] = set()
     slots = asyncio.Semaphore(manifest.concurrency)
     claim_stale = getattr(bus, "claim_stale", None)
     last_claim = time.monotonic()
 
+    async def missing() -> list[str]:
+        """Secrets and setup steps still missing; checked again with every heartbeat."""
+        try:
+            extra = await service.missing_setup()
+        except Exception:  # noqa: BLE001 - a failing check means "not ready"
+            log.exception("%s: missing_setup() failed", manifest.name)
+            extra = ["setup check failed: see the service logs"]
+        return [*manifest.missing_secrets(), *extra]
+
     await service.setup()
+    todo = await missing()
+    ready = asyncio.Event()
+    if not todo:
+        ready.set()
+    state = "ready" if ready.is_set() else "needs_config"
     await bus.register(manifest, instance, state)
     log.info("%s %s registered as %s (%s)", manifest.name, manifest.version, instance, state)
 
     async def beat() -> None:
+        nonlocal todo
         while not stop.is_set():
-            current = "busy" if running else state
-            await bus.heartbeat(manifest.name, instance, current, len(running), HEARTBEAT_TTL)
+            if not ready.is_set():
+                todo = await missing()
+                if not todo:
+                    log.info("%s is configured; taking tasks", manifest.name)
+                    ready.set()
+            current = "busy" if running else ("ready" if ready.is_set() else "needs_config")
+            await bus.heartbeat(manifest.name, instance, current, len(running), HEARTBEAT_TTL, todo)
             try:
                 await asyncio.wait_for(stop.wait(), HEARTBEAT_EVERY)
             except TimeoutError:
@@ -68,9 +87,13 @@ async def serve(
 
     beat_task = asyncio.create_task(beat())
     try:
-        if state == "needs_config":
-            log.warning("%s is missing secrets; it will not take tasks", manifest.name)
-            await stop.wait()
+        if not ready.is_set():
+            log.warning("%s needs configuration (%s); waiting", manifest.name, ", ".join(todo))
+            waiter = asyncio.create_task(ready.wait())
+            stopper = asyncio.create_task(stop.wait())
+            await asyncio.wait({waiter, stopper}, return_when=asyncio.FIRST_COMPLETED)
+            waiter.cancel()
+            stopper.cancel()
         while not stop.is_set():
             await slots.acquire()
             deliveries = await bus.read_tasks(manifest.name, instance, 1, block_ms)

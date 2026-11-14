@@ -130,10 +130,16 @@ class RedisBus:
         )
 
     async def heartbeat(
-        self, service: str, instance_id: str, state: str, running: int, ttl: int
+        self,
+        service: str,
+        instance_id: str,
+        state: str,
+        running: int,
+        ttl: int,
+        missing: list[str] | None = None,
     ) -> None:
         await self.redis.set(
             self._key("heartbeat", service, instance_id),
-            json.dumps({"state": state, "running": running}),
+            json.dumps({"state": state, "running": running, "missing": missing or []}),
             ex=ttl,
         )

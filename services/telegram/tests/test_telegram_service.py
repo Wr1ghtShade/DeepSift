@@ -265,3 +265,18 @@ def test_opt_in_and_secrets(monkeypatch):
     monkeypatch.delenv("TELEGRAM_API_ID")
     enabled = LocalRun({"telegram": svc.TelegramService()}, enabled={"telegram"})
     assert len(enabled.plan(EntityType.PHONE)) == 1  # runs and reports the missing key
+
+
+async def test_missing_setup_until_logged_in(monkeypatch, tmp_path):
+    from deepsift_svc_telegram import TelegramService
+
+    monkeypatch.setenv("DEEPSIFT_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("TELEGRAM_API_ID", "1")
+    monkeypatch.setenv("TELEGRAM_API_HASH", "x")
+    service = TelegramService()
+    assert await service.missing_setup() == ["log in: deepsift-telegram login"]
+    (tmp_path / "telegram").mkdir()
+    (tmp_path / "telegram" / "deepsift.session").write_bytes(b"")
+    assert await service.missing_setup() == []
+    monkeypatch.delenv("TELEGRAM_API_ID")
+    assert await service.missing_setup() == []  # the missing secret is reported instead

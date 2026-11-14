@@ -76,6 +76,15 @@ class TelegramService(Service):
         self.storage = LocalStorage()
         self._gateway: TelethonGateway | None = None
 
+    async def missing_setup(self) -> list[str]:
+        """Logged in once? The secrets themselves are checked from the manifest."""
+        if self.manifest.missing_secrets():
+            return []
+        session = session_path().with_suffix(".session")
+        if not await asyncio.to_thread(session.is_file):
+            return ["log in: deepsift-telegram login"]
+        return []
+
     def gateway(self) -> TelethonGateway:
         """The Telegram connection, created on first use. Tests replace this method."""
         if self._gateway is None:

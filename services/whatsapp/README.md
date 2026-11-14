@@ -35,9 +35,10 @@ deepsift-whatsapp check +33612345678   # quick check without the rest of DeepSif
 
 In Docker, the session lives in the `whatsapp-data` volume:
 
+The service runs with the stack but stays unchecked and idle until the account is linked, once:
+
 ```
-docker compose --profile whatsapp run --rm svc-whatsapp link --phone +33…
-docker compose --profile whatsapp up -d svc-whatsapp
+docker compose exec svc-whatsapp node src/cli.js link --phone +33XXXXXXXXX && docker compose restart svc-whatsapp
 ```
 
 ## What it reports

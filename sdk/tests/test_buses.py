@@ -88,3 +88,34 @@ async def test_worker_over_redis_bus(redis_bus, username_task):
     beat = json.loads(await redis_bus.redis.get("deepsift:heartbeat:fake:test-1"))
     assert beat["state"] in {"ready", "busy"}
     assert await redis_bus.redis.ttl("deepsift:heartbeat:fake:test-1") > 0
+
+
+async def test_worker_waits_for_setup_then_takes_tasks(username_task, monkeypatch):
+    from deepsift_sdk import worker
+
+    monkeypatch.setattr(worker, "HEARTBEAT_EVERY", 0.05)
+
+    class NotLoggedIn(FakeService):
+        logged_in = False
+
+        async def missing_setup(self) -> list[str]:
+            return [] if self.logged_in else ["log in: fake-login"]
+
+    service = NotLoggedIn()
+    bus = MemoryBus()
+    stop = asyncio.Event()
+    job = asyncio.create_task(serve(service, bus, instance_id="w", stop=stop, block_ms=20))
+    await asyncio.sleep(0.15)
+    beat = bus.heartbeats[("fake", "w")]
+    assert beat["state"] == "needs_config"
+    assert beat["missing"] == ["log in: fake-login"]
+    await bus.publish_task(username_task)
+    await asyncio.sleep(0.1)
+    assert bus.events.empty()  # not configured: the task waits
+
+    service.logged_in = True  # the operator finishes the setup, no restart
+    event = await asyncio.wait_for(bus.events.get(), 2)
+    assert event.task_id == username_task.task_id
+    assert bus.heartbeats[("fake", "w")]["missing"] == []
+    stop.set()
+    await asyncio.wait_for(job, 2)

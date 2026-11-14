@@ -106,6 +106,15 @@ class Service(ABC):
     async def close(self) -> None:  # noqa: B027 - optional hook
         """Called once on shutdown."""
 
+    async def missing_setup(self) -> list[str]:
+        """What is still to do before this service can work, beyond the secrets in its
+        manifest (e.g. ``"log in: deepsift-telegram login"``). Empty means ready.
+
+        Workers call it at start and with every heartbeat, so a service becomes ready
+        as soon as the operator finishes its setup, without a restart.
+        """
+        return []
+
     @abstractmethod
     async def run(self, task: Task, ctx: TaskContext) -> None:
         """Process one task. Report findings with ctx.found() as they come."""
