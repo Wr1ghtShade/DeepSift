@@ -78,6 +78,16 @@ await step("results", async () => {
   await pause(500);
 });
 
+await step("graph-page", async () => {
+  await page.click(`a[href="/investigations/${investigation}/graph"]`);
+  await page.waitForSelector(".graph-full canvas", { timeout: 10000 });
+  await page.type("#graph-search", "site-a");
+  await page.click('fieldset.choice input[value="concentric"]');
+  await pause(500);
+  await page.goBack();
+  await page.waitForSelector("table.data tbody tr a.cell-link", { timeout: 10000 });
+});
+
 await step("entity", async () => {
   await page.click("table.data tbody tr a.cell-link");
   await page.waitForSelector(".entity-head", { timeout: 5000 });

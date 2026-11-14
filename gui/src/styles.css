@@ -731,39 +731,50 @@ dl.facts {
 /* -- the sieve: one lane per task --------------------------------------------------------- */
 
 .lanes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: 0.625rem;
 }
 
+/* One compact tile per service: name and hits, bar, status. */
 .lane {
-  display: grid;
-  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr) 6rem 6rem;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  min-width: 0;
 
-  @media (width < 40rem) {
-    grid-template-columns: 1fr auto;
-    progress {
-      grid-column: 1 / -1;
-    }
-  }
-
-  .name {
+  .lane-head,
+  .lane-foot {
     display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
     min-width: 0;
-    strong {
-      font-weight: 600;
-    }
   }
-  .hits strong {
-    font-size: 1rem;
+  .lane-head strong {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hits {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
   }
 }
 
@@ -1184,9 +1195,6 @@ table.data .score {
 .list .note {
   color: var(--warn);
 }
-.lane .name .badge {
-  align-self: flex-start;
-}
 
 /* Narrow containers: each row becomes a card, labelled from data-label
  * (modern-web-guidance: responsive-table). */
@@ -1239,4 +1247,31 @@ table.data .score {
   @media (width < 80rem) {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.page-head.compact {
+  margin-block-start: -1.5rem;
+}
+.graph-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+}
+.graph-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 1.25rem;
+  align-items: start;
+  @media (width < 64rem) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.graph.graph-full {
+  height: max(32rem, calc(100dvh - 17rem));
+}
+.graph-side {
+  position: sticky;
+  top: 1rem;
+  padding: 1.25rem;
 }

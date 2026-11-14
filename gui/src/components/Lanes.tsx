@@ -72,10 +72,12 @@ function LaneRow({ lane }: { lane: Lane }) {
   // value undefined: an indeterminate bar while the service has not said how far it is.
   const tone = finished ? (lane.failed === lane.tasks ? "failed" : "done") : "";
   return (
-    <div className="lane">
-      <div className="name">
+    <li className="lane">
+      <div className="lane-head">
         <strong>{lane.service}</strong>
-        <span className={`badge ${status.tone}`}>{status.label}</span>
+        <span className="hits" aria-label={`${lane.hits} trouvé${lane.hits > 1 ? "s" : ""}`}>
+          {lane.hits}
+        </span>
       </div>
       <progress
         className={tone}
@@ -83,13 +85,15 @@ function LaneRow({ lane }: { lane: Lane }) {
         max={max}
         value={value}
       />
-      <span className="hits">
-        <strong>{lane.hits}</strong> trouvé{lane.hits > 1 ? "s" : ""}
-      </span>
-      <span className="muted">
-        {lane.tasks > 1 ? `${lane.finished}/${lane.tasks} tâches` : finished ? "" : "…"}
-      </span>
-    </div>
+      <div className="lane-foot">
+        <span className={`badge ${status.tone}`}>{status.label}</span>
+        {lane.tasks > 1 && (
+          <span className="muted">
+            {lane.finished}/{lane.tasks} tâches
+          </span>
+        )}
+      </div>
+    </li>
   );
 }
 
@@ -97,10 +101,10 @@ export function Lanes({ tasks }: { tasks: Task[] }) {
   const lanes = lanesOf(tasks);
   if (lanes.length === 0) return <p className="muted">Aucun service n'a tourné pour ce run.</p>;
   return (
-    <div className="lanes">
+    <ul className="lanes">
       {lanes.map((lane) => (
         <LaneRow key={lane.service} lane={lane} />
       ))}
-    </div>
+    </ul>
   );
 }

@@ -27,11 +27,11 @@ function defaultSelection(services: ServiceInfo[], type: EntityType): Set<string
 function serviceNote(service: ServiceInfo): string | null {
   if (service.state === "needs_config") {
     return service.missing.length
-      ? `À configurer : ${service.missing.join(", ")}`
+      ? `À configurer d'abord : ${service.missing.join(", ")}`
       : SERVICE_STATE_LABEL.needs_config;
   }
   if (service.state === "offline") return SERVICE_STATE_LABEL.offline;
-  if (!service.enabled) return "Désactivé (opt-in)";
+  if (!service.enabled) return "Décoché par défaut : cochez-le pour cette recherche";
   return service.rate_limit ? `Limite : ${service.rate_limit}` : null;
 }
 
@@ -141,7 +141,10 @@ export function NewSearchPage() {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (!value.trim()) return;
-    if (selected.size === 0) {
+    const chosen = [...selected].filter((name) =>
+      candidates.some((c) => c.name === name && usable(c)),
+    );
+    if (chosen.length === 0) {
       setError("Cochez au moins un service.");
       return;
     }
@@ -154,7 +157,7 @@ export function NewSearchPage() {
       await api.startRun(investigation.id, {
         selector: value.trim(),
         type,
-        services: [...selected],
+        services: chosen,
         auto_pivot: maxDepth > 0,
         max_depth: maxDepth,
       });
@@ -292,7 +295,8 @@ export function NewSearchPage() {
                       <input
                         type="checkbox"
                         id={`svc-${service.name}`}
-                        checked={selected.has(service.name)}
+                        checked={usable(service) && selected.has(service.name)}
+                        disabled={!usable(service)}
                         onChange={() => toggle(service.name)}
                       />
                       <label htmlFor={`svc-${service.name}`}>

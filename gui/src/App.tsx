@@ -5,6 +5,7 @@ import { UNAUTHORIZED_EVENT, api } from "./api";
 import { Shell } from "./components/Shell";
 import { aroundNav } from "./nav";
 import { EntityPage } from "./pages/Entity";
+import { GraphPage } from "./pages/GraphPage";
 import { InvestigationsPage } from "./pages/Investigations";
 import { LoginPage } from "./pages/Login";
 import { NewSearchPage } from "./pages/NewSearch";
@@ -38,6 +39,7 @@ export function App() {
         <Switch>
           <Route path="/" component={NewSearchPage} />
           <Route path="/investigations" component={InvestigationsPage} />
+          <Route path="/investigations/:id/graph" component={GraphPage} />
           <Route path="/investigations/:id" component={ResultsPage} />
           <Route path="/entities/:id" component={EntityPage} />
           <Route path="/services" component={ServicesPage} />

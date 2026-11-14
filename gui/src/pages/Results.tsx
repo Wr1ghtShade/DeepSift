@@ -3,6 +3,7 @@ import { Suspense, lazy, useEffect, useId, useState } from "react";
 import { Link, useParams } from "wouter";
 import { type Run, api, exportUrl } from "../api";
 import { EntityTable } from "../components/EntityTable";
+import { GraphLegend } from "../components/GraphLegend";
 import { Lanes, lanesOf } from "../components/Lanes";
 import { RUN_STATUS_LABEL, TYPE_LABEL, formatDate } from "../labels";
 import { keys, useInvestigationStream } from "../stream";
@@ -151,7 +152,12 @@ export function ResultsPage() {
           )}
         </section>
         <aside className="stack" aria-labelledby="h-graph">
-          <h2 id="h-graph">Graphe des pivots</h2>
+          <div className="row-between">
+            <h2 id="h-graph">Graphe des pivots</h2>
+            <Link href={`/investigations/${id}/graph`} className="button small">
+              Plein écran
+            </Link>
+          </div>
           {graph.data && graph.data.nodes.length > 1 ? (
             <Suspense fallback={<div className="graph" aria-busy="true" />}>
               <Graph data={graph.data} />
@@ -159,20 +165,7 @@ export function ResultsPage() {
           ) : (
             <p className="empty">Le graphe se dessine dès les premiers résultats.</p>
           )}
-          <div className="legend" aria-label="Légende">
-            <span>
-              <i className="dot-selector" /> Sélecteur
-            </span>
-            <span>
-              <i className="dot-profile" /> Profil
-            </span>
-            <span>
-              <i className="dot-pivot" /> Nouveau sélecteur
-            </span>
-            <span>
-              <i className="dot-group" /> Même avatar
-            </span>
-          </div>
+          <GraphLegend />
         </aside>
       </div>
     </>
