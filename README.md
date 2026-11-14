@@ -7,7 +7,7 @@
 
 # DeepSift
 
-> **🚧 Work in progress.** DeepSift is in early development. Every v1 service works from the CLI (usernames, email addresses, phone numbers, domains and images, with automatic pivots and avatar matching); the gateway and the web GUI are still to come. Expect breaking changes.
+> **🚧 Work in progress.** DeepSift is in early development. Every v1 service works from the CLI (usernames, email addresses, phone numbers, domains and images, with automatic pivots and avatar matching); the gateway API works; the web GUI is still to come. Expect breaking changes.
 
 DeepSift is an OSINT investigation console. Give it a selector — a username, an email address, a phone number, a domain or an image — and it runs the matching collection services, merges what they find, and lets you pivot from one result to the next.
 
@@ -21,7 +21,7 @@ It ships as a **CLI** and a **web GUI**, built on a **micro-service architecture
 | SDK | ✅ Models, `Service` base class, Redis Streams and in-memory buses, worker, local mode |
 | CLI | ✅ Local mode with automatic pivots and avatar groups: `user`, `email`, `phone`, `domain`, `image`, `search`, `services` |
 | Services | ✅ All 10 v1 services, plus `telegram` and `whatsapp` (opt-in) · see [`services/`](services/) |
-| Gateway | Not started |
+| Gateway | ✅ REST + WebSocket API, pivots, correlation, exports, token/session auth, hardened headers · see [`gateway/`](gateway/) |
 | Web GUI | Mockups done, not implemented |
 
 ## Features
@@ -67,12 +67,14 @@ uv run deepsift user nightowl_77 -o findings.json
 
 Some services need settings or keys: copy `.env.example` to `.env` and fill in what you use. For web mentions, run your own SearXNG (see the header of `compose.yaml`), then `export SEARXNG_URL=http://127.0.0.1:8080`. `deepsift services` shows what each service still needs.
 
-Later, two modes: `pipx install deepsift` for the CLI, and `docker compose up` for the full stack with the web GUI.
+To run the API: `uv run deepsift-gateway` (tasks run in-process; the token is written to `~/.local/share/deepsift/api-token`), or `docker compose up --build` for the full stack with Redis, PostgreSQL and one worker per service. See [`gateway/README.md`](gateway/README.md).
+
+Later: `pipx install deepsift` for the CLI, and the web GUI in the same stack.
 
 ## Development
 
 ```
-uv sync                 # install the workspace (sdk, cli, services)
+uv sync                 # install the workspace (sdk, cli, gateway, services)
 uv run ruff check .     # lint
 uv run ruff format .    # format
 uv run pytest           # tests, no network needed

@@ -1,5 +1,44 @@
-# gateway
+# deepsift-gateway
 
-FastAPI gateway: REST and WebSocket API, service registry, pivot engine. See [`docs/specs/service-contract.md`](../docs/specs/service-contract.md), sections 4 to 7.
+The DeepSift gateway: REST and WebSocket API (contract section 7), service registry,
+pivot engine and correlation. It serves the web GUI too.
 
-Not started.
+## Run it
+
+| Setup | Command | Tasks run |
+|---|---|---|
+| Laptop, no Docker | `pipx install "deepsift-gateway[services]"` then `deepsift-gateway` | inside the gateway process |
+| Stack | `docker compose up --build` | in the service workers, over Redis |
+
+It listens on `127.0.0.1:8000` by default. On first start without `DEEPSIFT_API_TOKEN`
+it creates a token in `$DEEPSIFT_DATA_DIR/api-token` (mode 0600) and logs the path.
+
+## Settings
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `DEEPSIFT_API_TOKEN` / `_FILE` | generated | Bearer token; the GUI exchanges it for a session cookie |
+| `DEEPSIFT_DATABASE_URL` / `_FILE` | SQLite in the data dir | e.g. `postgresql+asyncpg://deepsift@postgres/deepsift` |
+| `DEEPSIFT_DATABASE_PASSWORD` / `_FILE` | — | Inserted into the database URL |
+| `DEEPSIFT_REDIS_URL` (or `REDIS_URL`) | — | Set it to send tasks to workers; unset runs them in-process |
+| `DEEPSIFT_DATA_DIR` | `~/.local/share/deepsift` | Token, SQLite, blobs |
+| `DEEPSIFT_BLOBS_DIR` | `<data dir>/blobs` | Shared with avatar-hash, tineye, telegram |
+| `DEEPSIFT_GUI_DIR` | — | Built GUI (`gui/dist`) to serve on `/` |
+| `DEEPSIFT_ALLOWED_ORIGINS` | — | Extra browser origins, comma-separated (e.g. the Vite dev server) |
+| `DEEPSIFT_HOST`, `DEEPSIFT_PORT` | `127.0.0.1`, `8000` | Listen address |
+| `DEEPSIFT_FORWARDED_ALLOW_IPS` | — | Trust `X-Forwarded-*` from this reverse proxy |
+| `DEEPSIFT_HSTS` | off | `1` behind HTTPS |
+| `DEEPSIFT_SESSION_TTL` | `43200` | Session lifetime in seconds |
+
+## Security
+
+| Layer | What the gateway does |
+|---|---|
+| Auth | Bearer token, or a session cookie `__Host-deepsift_session` (`HttpOnly`, `Secure`, `SameSite=Strict`); only its SHA-256 is stored. Failed logins are throttled (5 per 10 min per client) |
+| CSRF | Cookie requests that change state need an allowed `Origin`; WebSocket handshakes too |
+| Fetch Metadata | Cross-site requests to the API are refused before auth |
+| CSP | GUI page: per-request nonce, `strict-dynamic`, Trusted Types, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`; violations reported to `/api/v1/reports`. API: `default-src 'none'` |
+| Other headers | `nosniff`, `Referrer-Policy: no-referrer`, COOP/CORP `same-origin`, `X-Frame-Options: DENY`, `Permissions-Policy`, `Cache-Control: no-store` on the API, HSTS on demand |
+| Inputs | Pydantic limits on every body, 1 MiB body cap (10 MiB for image uploads), options checked against manifests, images checked by magic number |
+| Outputs | Blobs served sandboxed with their sniffed type; CSV export neutralises formulas; HTML export escapes everything and runs no script |
+| Logout | `Clear-Site-Data: "cookies", "storage", "cache"` |

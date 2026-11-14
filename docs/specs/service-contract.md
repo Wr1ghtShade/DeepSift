@@ -158,23 +158,50 @@ Some conclusions need every result of a run, which no single service sees. The o
 
 ## 7. Gateway API
 
-Base path: `/api/v1`. JSON everywhere.
+Base path: `/api/v1`. JSON everywhere. Timestamps are ISO 8601 in UTC.
 
 | Method and path | Purpose |
 |---|---|
 | `POST /investigations` | Create an investigation `{ "name" }` |
-| `GET /investigations` | List investigations |
+| `GET /investigations` | List investigations, with their entity count |
 | `GET /investigations/{id}` | One investigation with its runs |
-| `POST /investigations/{id}/runs` | Start a run `{ "selector", "type"?, "services"?, "options"?, "auto_pivot"?, "max_depth"? }`. Without `type`, the gateway detects it. Without `services`, it uses every enabled service that accepts the type |
-| `POST /runs/{id}/cancel` | Stop a run |
-| `GET /investigations/{id}/entities` | Entities, with filters `type`, `service`, `min_confidence` |
-| `GET /investigations/{id}/graph` | Entities and links, for the graph view |
-| `GET /entities/{id}` | One entity, its sources and its links |
-| `POST /entities/{id}/pivot` | Run services on this entity `{ "services"? }` |
+| `DELETE /investigations/{id}` | Delete it, its runs and its entities |
+| `POST /investigations/{id}/runs` | Start a run `{ "selector", "type"?, "services"?, "options"?, "auto_pivot"?, "max_depth"? }`. Without `type`, the gateway detects it. Without `services`, it uses every enabled service, with a live configured instance, that accepts the type. `options` is `{ service: { option: value } }`, checked against the manifests. `max_depth` (default 1) applies only with `auto_pivot: true` |
+| `GET /runs/{id}` | A run and its tasks |
+| `POST /runs/{id}/cancel` | Stop a run (`409` if it is not running) |
+| `GET /investigations/{id}/entities` | Entities, with filters `type`, `service`, `min_confidence`, and `limit`/`offset` |
+| `GET /investigations/{id}/graph` | Entities, links and avatar groups, for the graph view |
+| `GET /entities/{id}` | One entity, its sources, its links and the services it can be pivoted to |
+| `POST /entities/{id}/pivot` | Run services on this entity `{ "services"?, "max_depth"? }` |
 | `GET /investigations/{id}/export?format=json\|csv\|html` | Report |
-| `GET /services` | Registered services: manifest, state, instances |
-| `PATCH /services/{name}` | `{ "enabled": bool }` |
-| `WS /investigations/{id}/stream` | Live events: `task.*` (section 5), `entity.merged`, `run.completed` |
+| `GET /services` | Registered services: manifest, state, instances, enabled |
+| `PATCH /services/{name}` | `{ "enabled": bool }`, overrides `enabled_by_default` |
+| `POST /blobs` | Upload an image (PNG, JPEG, GIF, WebP, 10 MiB max); returns `{ "sha256", "selector": "blob:<sha256>" }` |
+| `GET /blobs/{sha256}` | A stored image |
+| `WS /investigations/{id}/stream` | Live messages, below |
+| `GET /health` | Liveness, no auth |
+| `POST /session`, `GET /session`, `DELETE /session` | Browser login with the token, status, logout |
+| `POST /reports` | CSP violation reports (Reporting API), no auth |
+
+**Auth.** Every route but `health`, `session` and `reports` needs either `Authorization: Bearer <token>` or the session cookie that `POST /session { "token" }` sets. Cookie requests that change state, and WebSocket handshakes, must come from an allowed `Origin`. Details in `gateway/README.md`.
+
+**Stream messages.** Each has a `type`:
+
+| `type` | Fields |
+|---|---|
+| `run.started` | `run` |
+| `task.queued` | `task` (`id`, `run_id`, `service`, `entity_id`, `depth`, `status`) |
+| `task.started` | `run_id`, `task_id`, `service` |
+| `task.progress` | `done`, `total`, `message` |
+| `task.entity` | `entity` (merged, with `score`, `level`, `sources`), `link` (`source`, `rel`, `target`, database ids) |
+| `entity.merged` | Same fields, for an entity already known in the investigation |
+| `task.completed`, `task.failed` | `task`, with `count` or `error` |
+| `run.completed` | `run_id`, `status` (`completed` or `cancelled`), `avatar_groups` |
+| `stream.lagged` | The client fell behind; the gateway closes the socket and the client reloads |
+
+Services found by a worker keep their own entity ids inside the task (for `link.from`); the gateway gives every merged entity its own id.
+
+The gateway runs tasks in two ways: over Redis (section 5) when `DEEPSIFT_REDIS_URL` is set, otherwise in its own process with the installed services, like the CLI's local mode. A task with no final event after `timeout × 3 + 60 s` is failed with `timeout`. Runs still open when the gateway stops are marked `interrupted` at the next start.
 
 The CLI uses this API when a gateway is configured. Otherwise it runs services as local processes behind the same contract (section 9).
 
@@ -256,3 +283,5 @@ Downloaded files (avatars, exports) are content-addressed: stored under their SH
 | 2026-11-14 | Bus: Redis Streams. The SDK keeps a `Bus` interface so NATS JetStream stays possible |
 | 2026-11-14 | Storage: local content-addressed volume in v1, MinIO later (section 14) |
 | 2026-11-14 | Confidence: noisy-OR with an avatar bonus (section 13) |
+| 2026-11-14 | Gateway: FastAPI, PostgreSQL in the stack and SQLite on a laptop (SQLAlchemy async); runs tasks in-process when no Redis is set |
+| 2026-11-14 | Gateway auth: one API token until the login screen; browsers swap it for a `__Host-` session cookie. Security follows web.dev / modern-web-guidance (nonce CSP + Trusted Types, Fetch Metadata, COOP/CORP) |
