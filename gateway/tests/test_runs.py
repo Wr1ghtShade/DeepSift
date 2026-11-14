@@ -67,6 +67,7 @@ def test_run_merges_pivots_and_groups_avatars(api: TestClient) -> None:
     )
 
     detail = api.get(f"/api/v1/entities/{site_a['id']}").json()
+    assert detail["investigation_id"] == investigation
     rels = {(link["direction"], link["rel"]) for link in detail["links"]}
     assert ("in", "found_on") in rels and ("out", "avatar") in rels
     image = next(link for link in detail["links"] if link["rel"] == "avatar")

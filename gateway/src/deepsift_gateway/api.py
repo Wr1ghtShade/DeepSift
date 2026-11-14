@@ -483,6 +483,7 @@ def api_router() -> APIRouter:
 
         return {
             **entity_out(row, list(sources)),
+            "investigation_id": row.investigation_id,
             "links": [
                 {
                     "direction": "out" if lk.source_id == entity_id else "in",
@@ -679,7 +680,16 @@ def gui_routes(app: FastAPI, root: Path) -> None:
     """Serve the built GUI: hashed assets as immutable files, everything else as the app
     shell with a fresh CSP nonce (the build marks its own tags with ``__CSP_NONCE__``)."""
     root = root.resolve()
-    index = (root / "index.html").read_text(encoding="utf-8")
+    index_path = root / "index.html"
+    cache: dict[str, Any] = {"mtime": None, "html": ""}
+
+    def index() -> str:
+        """The shell, re-read when a new build replaces it."""
+        mtime = index_path.stat().st_mtime_ns
+        if cache["mtime"] != mtime:
+            cache["html"] = index_path.read_text(encoding="utf-8")
+            cache["mtime"] = mtime
+        return cache["html"]
 
     @app.get("/{path:path}", include_in_schema=False)
     async def gui(path: str) -> Response:
@@ -688,7 +698,7 @@ def gui_routes(app: FastAPI, root: Path) -> None:
         candidate = (root / path).resolve()
         if path and candidate.is_file() and candidate.is_relative_to(root):
             if candidate.name == "index.html":
-                return _shell(index)
+                return _shell(await asyncio.to_thread(index))
             media_type = mimetypes.guess_type(candidate.name)[0] or "application/octet-stream"
             immutable = path.startswith("assets/")
             return Response(
@@ -700,7 +710,7 @@ def gui_routes(app: FastAPI, root: Path) -> None:
                     else "no-cache",
                 },
             )
-        return _shell(index)
+        return _shell(await asyncio.to_thread(index))
 
 
 def _shell(index: str) -> Response:

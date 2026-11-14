@@ -171,7 +171,7 @@ Base path: `/api/v1`. JSON everywhere. Timestamps are ISO 8601 in UTC.
 | `POST /runs/{id}/cancel` | Stop a run (`409` if it is not running) |
 | `GET /investigations/{id}/entities` | Entities, with filters `type`, `service`, `min_confidence`, and `limit`/`offset` |
 | `GET /investigations/{id}/graph` | Entities, links and avatar groups, for the graph view |
-| `GET /entities/{id}` | One entity, its sources, its links and the services it can be pivoted to |
+| `GET /entities/{id}` | One entity, its investigation, its sources, its links and the services it can be pivoted to |
 | `POST /entities/{id}/pivot` | Run services on this entity `{ "services"?, "max_depth"? }` |
 | `GET /investigations/{id}/export?format=json\|csv\|html` | Report |
 | `GET /services` | Registered services: manifest, state, instances, enabled |
