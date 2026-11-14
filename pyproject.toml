@@ -1,23 +1,32 @@
 [project]
-name = "deepsift"
-version = "0.0.1"
-description = "OSINT investigation console: CLI and web GUI on a micro-service architecture"
-readme = "README.md"
-license = "GPL-3.0-or-later"
+name = "deepsift-workspace"
+version = "0.0.0"
+description = "DeepSift monorepo (uv workspace): SDK, CLI and services"
 requires-python = ">=3.11"
-authors = [{ name = "Wr1ghtShade" }]
-classifiers = [
-  "Development Status :: 1 - Planning",
-  "Programming Language :: Python :: 3",
-  "Topic :: Security",
-]
+license = "GPL-3.0-or-later"
 dependencies = []
 
-[project.urls]
-Repository = "https://github.com/Wr1ghtShade/deepsift"
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["sdk", "cli", "services/sherlock"]
+
+[tool.uv.sources]
+deepsift-sdk = { workspace = true }
+deepsift = { workspace = true }
+deepsift-svc-sherlock = { workspace = true }
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = [
+  "deepsift-sdk",
+  "deepsift",
+  "deepsift-svc-sherlock",
+  "pytest>=8",
+  "pytest-asyncio>=0.24",
+  "ruff>=0.6",
+  "fakeredis>=2.26",
+]
 
 [tool.ruff]
 line-length = 100
@@ -27,4 +36,8 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP", "ASYNC"]
 
 [tool.pytest.ini_options]
-testpaths = ["gateway", "sdk", "services", "cli"]
+testpaths = ["sdk/tests", "cli/tests", "services/sherlock/tests"]
+addopts = "--import-mode=importlib"
+pythonpath = ["sdk/tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
