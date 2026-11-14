@@ -72,6 +72,14 @@ cd DeepSift
 
 ### Option A: the full stack in Docker (GUI included)
 
+One line (Linux, macOS, WSL):
+
+```
+git clone https://github.com/Wr1ghtShade/DeepSift.git && cd DeepSift && sed "s/^SEARXNG_SECRET=.*/SEARXNG_SECRET=$(openssl rand -hex 32)/" .env.example > .env && mkdir -p secrets && openssl rand -hex 24 > secrets/postgres_password.txt && openssl rand -base64 32 > secrets/api_token.txt && docker compose up -d --build && echo "Open http://127.0.0.1:8000 with the token in secrets/api_token.txt"
+```
+
+Step by step:
+
 ```
 cp .env.example .env                       # set SEARXNG_SECRET (openssl rand -hex 32) and any API keys
 mkdir -p secrets
@@ -83,6 +91,14 @@ docker compose up -d --build
 Open http://127.0.0.1:8000 and log in with the token in `secrets/api_token.txt`. Telegram and WhatsApp are off: read `services/telegram/README.md` and `services/whatsapp/README.md` first.
 
 ### Option B: CLI only, on your machine
+
+One line:
+
+```
+git clone https://github.com/Wr1ghtShade/DeepSift.git && cd DeepSift && uv sync && uv run deepsift services
+```
+
+Step by step:
 
 ```
 uv sync
