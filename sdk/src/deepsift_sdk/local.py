@@ -13,15 +13,13 @@ Besides running services, the local run does what the gateway will do in the sta
 from __future__ import annotations
 
 import asyncio
-import string
-from collections import defaultdict
 from collections.abc import AsyncIterator, Mapping
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
 from typing import Any
 
 from .confidence import Level, combine, level, with_avatar_bonus
-from .correlate import PHASH_THRESHOLD, cluster
+from .correlate import PHASH_THRESHOLD, group_avatars
 from .detect import detect_type
 from .entities import Entity, EntityType
 from .messages import ErrorCode, ErrorInfo, Event, EventKind, Task
@@ -153,34 +151,14 @@ class LocalRun:
 
     def _correlate(self) -> None:
         """Group profiles whose avatars hash close together (pHash, Hamming distance)."""
-        profiles_of_image: dict[Key, set[Key]] = defaultdict(set)
-        images_of_hash: dict[Key, set[Key]] = defaultdict(set)
-        for link in self._links:
-            if link.rel == "avatar":
-                profiles_of_image[link.target].add(link.source)
-            elif link.rel == "hash":
-                images_of_hash[link.target].add(link.source)
-
-        phashes: dict[Key, str] = {}
-        for hash_key in images_of_hash:
-            attributes = self._findings[hash_key].entity.attributes
-            if attributes.get("phash") and not attributes.get("trivial"):
-                phashes[hash_key] = attributes["phash"]
-
-        groups = []
-        for hash_keys in cluster(phashes, PHASH_THRESHOLD):
-            profiles = {
-                profile
-                for hash_key in hash_keys
-                for image in images_of_hash[hash_key]
-                for profile in profiles_of_image[image]
-            }
-            if len(profiles) >= 2:
-                groups.append((sorted(profiles), sorted(phashes[k] for k in hash_keys)))
-
+        triples = [(link.source, link.rel, link.target) for link in self._links]
+        attributes = {
+            key: finding.entity.attributes
+            for key, finding in self._findings.items()
+            if finding.entity.type is EntityType.IMAGE_HASH
+        }
         self.avatar_groups = []
-        for index, (profiles, hashes) in enumerate(sorted(groups)):
-            name = string.ascii_uppercase[index % 26] + ("" if index < 26 else str(index // 26))
+        for name, profiles, hashes in group_avatars(triples, attributes, PHASH_THRESHOLD):
             self.avatar_groups.append(AvatarGroup(name, tuple(profiles), tuple(hashes)))
             for profile in profiles:
                 self._findings[profile].avatar_group = name
