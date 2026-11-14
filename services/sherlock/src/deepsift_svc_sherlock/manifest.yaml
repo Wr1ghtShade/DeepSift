@@ -1,0 +1,21 @@
+contract: 1
+name: sherlock
+version: 0.1.0
+description: Checks whether a username exists on ~400 sites (fast first pass)
+inputs: [username]
+outputs: [profile]
+links: [found_on]
+mode: library
+license: MIT
+timeout: 180s
+concurrency: 2
+secrets: []
+options:
+  site_timeout:
+    type: int
+    default: 15
+    description: Seconds to wait for each site
+  include_nsfw:
+    type: bool
+    default: false
+    description: Also check adult sites
