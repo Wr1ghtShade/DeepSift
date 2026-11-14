@@ -1,0 +1,22 @@
+contract: 1
+name: dns-mail
+version: 0.1.0
+description: Mail servers (MX) of an email address or domain, and the mail provider behind them
+inputs: [email, domain]
+outputs: [mx_record]
+links: [mail_server]
+mode: local
+license: ISC
+timeout: 20s
+concurrency: 8
+secrets: []
+options:
+  resolver:
+    type: enum
+    values: [system, doh]
+    default: system
+    description: System DNS, or DNS over HTTPS (useful behind a proxy, and more discreet)
+  doh_url:
+    type: str
+    default: https://cloudflare-dns.com/dns-query
+    description: DNS-over-HTTPS endpoint used when resolver is doh
