@@ -21,6 +21,7 @@ dns-mail = ["deepsift-svc-dns-mail"]
 phone-meta = ["deepsift-svc-phone-meta"]
 ignorant = ["deepsift-svc-ignorant"]
 whatsapp = ["deepsift-svc-whatsapp"]
+telegram = ["deepsift-svc-telegram"]
 all = [
   "deepsift-svc-sherlock",
   "deepsift-svc-maigret",
@@ -46,6 +47,7 @@ deepsift-svc-dns-mail = { workspace = true }
 deepsift-svc-phone-meta = { workspace = true }
 deepsift-svc-ignorant = { workspace = true }
 deepsift-svc-whatsapp = { workspace = true }
+deepsift-svc-telegram = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

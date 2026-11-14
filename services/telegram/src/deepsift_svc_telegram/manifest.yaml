@@ -1,0 +1,38 @@
+contract: 1
+name: telegram
+version: 0.1.0
+description: >-
+  Telegram account behind a phone number (when its owner lets anyone find them by
+  number) or a public @username: names, bio, picture, last-seen category. Uses your own
+  dedicated Telegram account through the official API. Off by default.
+inputs: [phone, username]
+outputs: [profile, image, identity, username, phone]
+links: [found_on, avatar, identity, username, phone]
+mode: api
+license: MIT (Telethon)
+timeout: 90s
+concurrency: 1
+rate_limit: 1/m
+secrets: [TELEGRAM_API_ID, TELEGRAM_API_HASH]
+enabled_by_default: false
+options:
+  min_interval:
+    type: int
+    default: 10
+    description: Minimum seconds between two lookups, to protect the account
+  daily_limit:
+    type: int
+    default: 50
+    description: Most lookups per day (UTC); Telegram itself limits contact imports
+  default_region:
+    type: str
+    default: ""
+    description: Two-letter country (e.g. FR) for numbers written without a +country code
+  fetch_photo:
+    type: bool
+    default: true
+    description: Download the profile picture (stored in the blob store for avatar-hash)
+  fetch_bio:
+    type: bool
+    default: true
+    description: Fetch the bio of the account

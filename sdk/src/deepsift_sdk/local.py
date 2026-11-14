@@ -123,8 +123,8 @@ class LocalRun:
         """Services to run on an entity of this type.
 
         Opt-in services (``enabled_by_default: false``) run only when enabled, and
-        services missing a required secret are skipped, unless named in ``only`` (then
-        they run and report what is missing).
+        services missing a required secret are skipped, unless enabled explicitly or
+        named in ``only`` (then they run and report what is missing).
         """
         if only:
             unknown = sorted(set(only) - self.services.keys())
@@ -135,7 +135,8 @@ class LocalRun:
             candidates = [
                 s
                 for name, s in self.services.items()
-                if self.is_enabled(name) and not s.manifest.missing_secrets()
+                if self.is_enabled(name)
+                and (name in self.enabled or not s.manifest.missing_secrets())
             ]
         return [s for s in candidates if s.manifest.accepts(entity_type)]
 
