@@ -1,0 +1,30 @@
+contract: 1
+name: searxng
+version: 0.1.0
+description: Web pages that mention a username, email, phone number or domain, through your own SearXNG meta-search instance
+inputs: [username, email, phone, domain]
+outputs: [web_page]
+links: [mentioned_on]
+mode: api
+license: AGPL-3.0 (SearXNG, run separately)
+timeout: 60s
+concurrency: 2
+secrets: []
+config: [SEARXNG_URL]
+options:
+  max_results:
+    type: int
+    default: 30
+    description: Most pages reported per selector
+  pages:
+    type: int
+    default: 1
+    description: Result pages to fetch per query
+  phone_variants:
+    type: bool
+    default: true
+    description: Also search the international and national spellings of a phone number
+  include_unmentioned:
+    type: bool
+    default: false
+    description: Also report results whose title, snippet and URL do not contain the selector

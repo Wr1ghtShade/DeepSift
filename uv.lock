@@ -18,6 +18,7 @@ members = [
     "deepsift-svc-ignorant",
     "deepsift-svc-maigret",
     "deepsift-svc-phone-meta",
+    "deepsift-svc-searxng",
     "deepsift-svc-sherlock",
     "deepsift-svc-telegram",
     "deepsift-svc-whatsapp",
@@ -696,6 +697,7 @@ all = [
     { name = "deepsift-svc-ignorant" },
     { name = "deepsift-svc-maigret" },
     { name = "deepsift-svc-phone-meta" },
+    { name = "deepsift-svc-searxng" },
     { name = "deepsift-svc-sherlock" },
 ]
 avatar-hash = [
@@ -718,6 +720,9 @@ maigret = [
 ]
 phone-meta = [
     { name = "deepsift-svc-phone-meta" },
+]
+searxng = [
+    { name = "deepsift-svc-searxng" },
 ]
 sherlock = [
     { name = "deepsift-svc-sherlock" },
@@ -746,6 +751,8 @@ requires-dist = [
     { name = "deepsift-svc-maigret", marker = "extra == 'maigret'", editable = "services/maigret" },
     { name = "deepsift-svc-phone-meta", marker = "extra == 'all'", editable = "services/phone-meta" },
     { name = "deepsift-svc-phone-meta", marker = "extra == 'phone-meta'", editable = "services/phone-meta" },
+    { name = "deepsift-svc-searxng", marker = "extra == 'all'", editable = "services/searxng" },
+    { name = "deepsift-svc-searxng", marker = "extra == 'searxng'", editable = "services/searxng" },
     { name = "deepsift-svc-sherlock", marker = "extra == 'all'", editable = "services/sherlock" },
     { name = "deepsift-svc-sherlock", marker = "extra == 'sherlock'", editable = "services/sherlock" },
     { name = "deepsift-svc-telegram", marker = "extra == 'telegram'", editable = "services/telegram" },
@@ -753,7 +760,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "phone-meta", "ignorant", "whatsapp", "telegram", "all"]
+provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "phone-meta", "ignorant", "whatsapp", "telegram", "searxng", "all"]
 
 [[package]]
 name = "deepsift-sdk"
@@ -890,6 +897,23 @@ requires-dist = [
 ]
 
 [[package]]
+name = "deepsift-svc-searxng"
+version = "0.1.0"
+source = { editable = "services/searxng" }
+dependencies = [
+    { name = "deepsift-sdk" },
+    { name = "httpx" },
+    { name = "phonenumbers" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "deepsift-sdk", editable = "sdk" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "phonenumbers", specifier = ">=8.13" },
+]
+
+[[package]]
 name = "deepsift-svc-sherlock"
 version = "0.1.0"
 source = { editable = "services/sherlock" }
@@ -948,6 +972,7 @@ dev = [
     { name = "deepsift-svc-ignorant" },
     { name = "deepsift-svc-maigret" },
     { name = "deepsift-svc-phone-meta" },
+    { name = "deepsift-svc-searxng" },
     { name = "deepsift-svc-sherlock" },
     { name = "deepsift-svc-telegram" },
     { name = "deepsift-svc-whatsapp" },
@@ -970,6 +995,7 @@ dev = [
     { name = "deepsift-svc-ignorant", editable = "services/ignorant" },
     { name = "deepsift-svc-maigret", editable = "services/maigret" },
     { name = "deepsift-svc-phone-meta", editable = "services/phone-meta" },
+    { name = "deepsift-svc-searxng", editable = "services/searxng" },
     { name = "deepsift-svc-sherlock", editable = "services/sherlock" },
     { name = "deepsift-svc-telegram", editable = "services/telegram" },
     { name = "deepsift-svc-whatsapp", editable = "services/whatsapp" },

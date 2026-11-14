@@ -1,0 +1,24 @@
+[project]
+name = "deepsift-svc-searxng"
+version = "0.1.0"
+description = "DeepSift service: web pages that mention a selector, through your own SearXNG instance"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.11"
+dependencies = [
+  "deepsift-sdk",
+  "httpx>=0.27",
+  "phonenumbers>=8.13",
+]
+
+[project.entry-points."deepsift.services"]
+searxng = "deepsift_svc_searxng:SearxngService"
+
+[tool.uv.sources]
+deepsift-sdk = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/deepsift_svc_searxng"]

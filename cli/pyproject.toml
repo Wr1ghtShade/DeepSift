@@ -22,6 +22,7 @@ phone-meta = ["deepsift-svc-phone-meta"]
 ignorant = ["deepsift-svc-ignorant"]
 whatsapp = ["deepsift-svc-whatsapp"]
 telegram = ["deepsift-svc-telegram"]
+searxng = ["deepsift-svc-searxng"]
 all = [
   "deepsift-svc-sherlock",
   "deepsift-svc-maigret",
@@ -31,6 +32,7 @@ all = [
   "deepsift-svc-dns-mail",
   "deepsift-svc-phone-meta",
   "deepsift-svc-ignorant",
+  "deepsift-svc-searxng",
 ]
 
 [project.scripts]
@@ -48,6 +50,7 @@ deepsift-svc-phone-meta = { workspace = true }
 deepsift-svc-ignorant = { workspace = true }
 deepsift-svc-whatsapp = { workspace = true }
 deepsift-svc-telegram = { workspace = true }
+deepsift-svc-searxng = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

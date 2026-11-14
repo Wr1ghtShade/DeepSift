@@ -24,6 +24,31 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  # Your own meta-search instance, used by the searxng service. Reachable from the
+  # host on 127.0.0.1:8080 only. Settings: deploy/searxng/settings.yml.
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    environment:
+      SEARXNG_BASE_URL: http://localhost:8080/
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?set SEARXNG_SECRET in .env (openssl rand -hex 32)}
+    volumes:
+      - ./deploy/searxng:/etc/searxng
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  svc-searxng:
+    build:
+      context: .
+      dockerfile: services/searxng/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      SEARXNG_URL: http://searxng:8080
+    depends_on:
+      - redis
+      - searxng
+
   svc-sherlock:
     build:
       context: .

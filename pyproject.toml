@@ -10,7 +10,7 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["sdk", "cli", "services/sherlock", "services/maigret", "services/avatar-hash", "services/holehe", "services/gravatar", "services/dns-mail", "services/phone-meta", "services/ignorant", "services/whatsapp", "services/telegram"]
+members = ["sdk", "cli", "services/sherlock", "services/maigret", "services/avatar-hash", "services/holehe", "services/gravatar", "services/dns-mail", "services/phone-meta", "services/ignorant", "services/whatsapp", "services/telegram", "services/searxng"]
 
 [tool.uv.sources]
 deepsift-sdk = { workspace = true }
@@ -25,6 +25,7 @@ deepsift-svc-phone-meta = { workspace = true }
 deepsift-svc-ignorant = { workspace = true }
 deepsift-svc-whatsapp = { workspace = true }
 deepsift-svc-telegram = { workspace = true }
+deepsift-svc-searxng = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -40,6 +41,7 @@ dev = [
   "deepsift-svc-ignorant",
   "deepsift-svc-whatsapp",
   "deepsift-svc-telegram",
+  "deepsift-svc-searxng",
   "pytest>=8",
   "pytest-asyncio>=0.24",
   "ruff>=0.6",
@@ -54,7 +56,7 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP", "ASYNC"]
 
 [tool.pytest.ini_options]
-testpaths = ["sdk/tests", "cli/tests", "services/sherlock/tests", "services/maigret/tests", "services/avatar-hash/tests", "services/holehe/tests", "services/gravatar/tests", "services/dns-mail/tests", "services/phone-meta/tests", "services/ignorant/tests", "services/whatsapp/tests", "services/telegram/tests"]
+testpaths = ["sdk/tests", "cli/tests", "services/sherlock/tests", "services/maigret/tests", "services/avatar-hash/tests", "services/holehe/tests", "services/gravatar/tests", "services/dns-mail/tests", "services/phone-meta/tests", "services/ignorant/tests", "services/whatsapp/tests", "services/telegram/tests", "services/searxng/tests"]
 addopts = "--import-mode=importlib"
 pythonpath = ["sdk/tests"]
 asyncio_mode = "auto"
