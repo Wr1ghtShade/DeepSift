@@ -1,4 +1,4 @@
-"""`deepsift` command: runs installed services locally and shows results as they arrive."""
+"""`deepsift` command: runs services locally, or through a gateway, and shows results live."""
 
 from __future__ import annotations
 
@@ -10,11 +10,14 @@ from typing import Annotated, Any
 
 import typer
 from deepsift_sdk import Entity, EntityType, Event, EventKind, Level
+from deepsift_sdk.detect import detect_type
 from deepsift_sdk.local import MAX_DEPTH, LocalRun, discover
 from rich.console import Console
 from rich.live import Live
 from rich.table import Table
 from rich.text import Text
+
+from . import remote
 
 app = typer.Typer(
     help="DeepSift: OSINT investigations from the terminal. Work in progress.",
@@ -22,6 +25,40 @@ app = typer.Typer(
     add_completion=False,
 )
 console = Console()
+
+#: Set by the --gateway option or DEEPSIFT_GATEWAY_URL: run through that gateway.
+state: dict[str, str | None] = {"gateway": None}
+
+
+@app.callback()
+def main(
+    gateway: Annotated[
+        str | None,
+        typer.Option(
+            "--gateway",
+            "-g",
+            envvar="DEEPSIFT_GATEWAY_URL",
+            help="Run through this DeepSift gateway (e.g. http://127.0.0.1:8000) "
+            "instead of local services. Token: DEEPSIFT_API_TOKEN.",
+        ),
+    ] = None,
+) -> None:
+    state["gateway"] = gateway.rstrip("/") if gateway else None
+
+
+def _gateway() -> remote.Gateway | None:
+    url = state["gateway"]
+    if not url:
+        return None
+    token = remote.find_token(url)
+    if not token:
+        console.print(
+            "[red]No API token for the gateway.[/] Set DEEPSIFT_API_TOKEN or "
+            "DEEPSIFT_API_TOKEN_FILE."
+        )
+        raise typer.Exit(2)
+    return remote.Gateway(url, token)
+
 
 LEVEL_STYLE = {Level.HIGH: "bold green", Level.MEDIUM: "yellow", Level.LOW: "dim"}
 #: Intermediate entities used for correlation, kept in the JSON export but not in the table.
@@ -286,6 +323,44 @@ async def _investigate(
     return run
 
 
+async def _investigate_remote(
+    gateway: remote.Gateway,
+    selector: str,
+    entity_type: EntityType | None,
+    only: list[str] | None,
+    depth: int,
+    opts: list[str] | None,
+    region: str | None,
+    enable: list[str] | None,
+) -> remote.RemoteRun:
+    try:
+        catalogue = await gateway.services()
+        options = parse_options(opts, remote.manifests_for_options(catalogue), region)
+        planned_type = entity_type or detect_type(selector)
+        services = remote.plan(catalogue, planned_type, only, enable)
+        lanes: dict[str, Lane] = {}
+        with Live(_lanes_table(lanes), console=console, refresh_per_second=8) as live:
+
+            def show(event: Event) -> None:
+                _update(lanes, event)
+                live.update(_lanes_table(lanes))
+
+            run = await remote.investigate(
+                gateway, selector, entity_type, services, options, depth, show
+            )
+        if not lanes:
+            console.print(
+                f"[yellow]No service on the gateway took this {planned_type.value}.[/] "
+                "Run `deepsift services`."
+            )
+        console.print(
+            f"[dim]Investigation {run.investigation_id} is kept on the gateway ({gateway.url}).[/]"
+        )
+        return run
+    finally:
+        await gateway.close()
+
+
 def _run(
     selector: str,
     entity_type: EntityType | None,
@@ -297,10 +372,21 @@ def _run(
     region: str | None = None,
     enable: list[str] | None = None,
 ) -> None:
+    gateway = _gateway()
     try:
-        run = asyncio.run(
-            _investigate(selector, entity_type, services, depth, opts, region, enable)
-        )
+        if gateway is not None:
+            run: Any = asyncio.run(
+                _investigate_remote(
+                    gateway, selector, entity_type, services, depth, opts, region, enable
+                )
+            )
+        else:
+            run = asyncio.run(
+                _investigate(selector, entity_type, services, depth, opts, region, enable)
+            )
+    except remote.GatewayError as exc:
+        console.print(f"[red]{exc}[/]")
+        raise typer.Exit(1) from exc
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         raise typer.Exit(2) from exc
@@ -401,9 +487,45 @@ def search(
     _run(selector, None, service, output, min_level, depth, opt, region, enable)
 
 
+def _remote_services(gateway: remote.Gateway) -> None:
+    async def fetch() -> list[dict[str, Any]]:
+        try:
+            return await gateway.services()
+        finally:
+            await gateway.close()
+
+    try:
+        services = asyncio.run(fetch())
+    except remote.GatewayError as exc:
+        console.print(f"[red]{exc}[/]")
+        raise typer.Exit(1) from exc
+    table = Table(title=f"Services on {gateway.url}", title_justify="left")
+    for column in ("Service", "Version", "Accepts", "Returns", "State"):
+        table.add_column(column)
+    styles = {"ready": "green", "busy": "green", "needs_config": "yellow", "offline": "red"}
+    for service in services:
+        state_text = f"[{styles.get(service['state'], 'white')}]{service['state']}[/]"
+        if service["missing"]:
+            state_text += f" [dim](needs {', '.join(service['missing'])})[/]"
+        if not service["enabled"]:
+            state_text += " [dim](off)[/]"
+        table.add_row(
+            service["name"],
+            service["version"],
+            ", ".join(service["inputs"]),
+            ", ".join(service["outputs"]),
+            state_text,
+        )
+    console.print(table)
+
+
 @app.command()
 def services() -> None:
-    """List installed services."""
+    """List the services (installed here, or on the gateway)."""
+    gateway = _gateway()
+    if gateway is not None:
+        _remote_services(gateway)
+        return
     installed = discover()
     if not installed:
         console.print("No service installed. Try `pip install deepsift[all]`.")

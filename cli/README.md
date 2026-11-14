@@ -1,6 +1,13 @@
 # deepsift (CLI)
 
-The `deepsift` command. For now it runs in local mode: installed services run in-process, without Redis or a gateway.
+The `deepsift` command. Two modes:
+
+| Mode | How | Where services run |
+|---|---|---|
+| Local (default) | `deepsift user nightowl_77` | In the CLI process, with the services installed next to it |
+| Gateway | `deepsift --gateway http://127.0.0.1:8000 user nightowl_77`, or `DEEPSIFT_GATEWAY_URL` | On the gateway (in-process or Docker workers); the investigation stays there and shows in the GUI |
+
+In gateway mode the token comes from `DEEPSIFT_API_TOKEN`, `DEEPSIFT_API_TOKEN_FILE`, or, for a gateway on this machine, the `api-token` file it writes in `$DEEPSIFT_DATA_DIR`. Pivots then use the services enabled on the gateway; `--enable` adds an opt-in service for the selector only.
 
 ```
 deepsift services                         # installed services and their state

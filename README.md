@@ -19,7 +19,7 @@ It ships as a **CLI** and a **web GUI**, built on a **micro-service architecture
 |---|---|
 | Service contract | Draft v1 — [`docs/specs/service-contract.md`](docs/specs/service-contract.md) |
 | SDK | ✅ Models, `Service` base class, Redis Streams and in-memory buses, worker, local mode |
-| CLI | ✅ Local mode with automatic pivots and avatar groups: `user`, `email`, `phone`, `domain`, `image`, `search`, `services` |
+| CLI | ✅ Local mode or through the gateway (`--gateway`), automatic pivots and avatar groups: `user`, `email`, `phone`, `domain`, `image`, `search`, `services` |
 | Services | ✅ All 10 v1 services, plus `telegram` and `whatsapp` (opt-in) · see [`services/`](services/) |
 | Gateway | ✅ REST + WebSocket API, pivots, correlation, exports, token/session auth, hardened headers · see [`gateway/`](gateway/) |
 | Web GUI | ✅ Login, new investigation, live results (lanes, table, graph), entity page with pivots, services; graphite and light themes · see [`gui/`](gui/) |

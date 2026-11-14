@@ -766,8 +766,10 @@ version = "0.1.0"
 source = { editable = "cli" }
 dependencies = [
     { name = "deepsift-sdk" },
+    { name = "httpx" },
     { name = "rich" },
     { name = "typer" },
+    { name = "websockets" },
 ]
 
 [package.optional-dependencies]
@@ -845,8 +847,10 @@ requires-dist = [
     { name = "deepsift-svc-tineye", marker = "extra == 'all'", editable = "services/tineye" },
     { name = "deepsift-svc-tineye", marker = "extra == 'tineye'", editable = "services/tineye" },
     { name = "deepsift-svc-whatsapp", marker = "extra == 'whatsapp'", editable = "services/whatsapp" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "rich", specifier = ">=13" },
     { name = "typer", specifier = ">=0.12" },
+    { name = "websockets", specifier = ">=13" },
 ]
 provides-extras = ["sherlock", "maigret", "avatar-hash", "holehe", "gravatar", "dns-mail", "phone-meta", "ignorant", "whatsapp", "telegram", "searxng", "tineye", "all"]
 
