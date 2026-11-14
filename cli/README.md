@@ -1,11 +1,22 @@
-# cli
+# deepsift (CLI)
 
-The `deepsift` command (Typer + Rich). It talks to a gateway when one is configured, and otherwise runs services locally.
+The `deepsift` command. For now it runs in local mode: installed services run in-process, without Redis or a gateway.
 
 ```
-deepsift user nightowl_77 --mode all
-deepsift email john@example.org
-deepsift phone +33612345678
+deepsift services                         # installed services and their state
+deepsift user nightowl_77                 # username
+deepsift email john@example.org           # email
+deepsift phone +33612345678               # phone number
+deepsift domain example.org               # domain
+deepsift search <anything>                # detect the type, then run matching services
 ```
 
-Not started.
+Options for every search:
+
+| Option | Effect |
+|---|---|
+| `-s, --service NAME` | Only run this service (repeatable) |
+| `-o, --output FILE` | Save findings as JSON |
+| `--min high\|medium\|low` | Hide findings below this confidence level |
+
+While the search runs, the sieve shows each service's progress. Findings found by several services are merged and scored (noisy-OR, see the contract's section 13).
