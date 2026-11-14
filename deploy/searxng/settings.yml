@@ -17,7 +17,7 @@ server:
   # Set SEARXNG_SECRET in your .env; SearXNG reads it instead of this value.
   secret_key: "change-me-with-SEARXNG_SECRET"
   # The instance is only reachable by DeepSift on the internal network (and on
-  # 127.0.0.1:8080 from the host), so the public-instance bot limiter is off.
+  # 127.0.0.1:47880 from the host), so the public-instance bot limiter is off.
   limiter: false
   image_proxy: false
   method: "GET"

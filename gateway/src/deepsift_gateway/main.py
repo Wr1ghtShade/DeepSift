@@ -10,7 +10,7 @@ import os
 def main() -> None:
     parser = argparse.ArgumentParser(prog="deepsift-gateway", description=__doc__)
     parser.add_argument("--host", default=os.environ.get("DEEPSIFT_HOST", "127.0.0.1"))
-    parser.add_argument("--port", type=int, default=int(os.environ.get("DEEPSIFT_PORT", "8000")))
+    parser.add_argument("--port", type=int, default=int(os.environ.get("DEEPSIFT_PORT", "47800")))
     parser.add_argument(
         "--forwarded-allow-ips",
         default=os.environ.get("DEEPSIFT_FORWARDED_ALLOW_IPS"),

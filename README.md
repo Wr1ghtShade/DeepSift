@@ -75,7 +75,7 @@ cd DeepSift
 One line (Linux, macOS, WSL):
 
 ```
-git clone https://github.com/Wr1ghtShade/DeepSift.git && cd DeepSift && sed "s/^SEARXNG_SECRET=.*/SEARXNG_SECRET=$(openssl rand -hex 32)/" .env.example > .env && mkdir -p secrets && openssl rand -hex 24 > secrets/postgres_password.txt && openssl rand -base64 32 > secrets/api_token.txt && docker compose up -d --build && echo "Open http://127.0.0.1:8000 with the token in secrets/api_token.txt"
+git clone https://github.com/Wr1ghtShade/DeepSift.git && cd DeepSift && sed "s/^SEARXNG_SECRET=.*/SEARXNG_SECRET=$(openssl rand -hex 32)/" .env.example > .env && mkdir -p secrets && openssl rand -hex 24 > secrets/postgres_password.txt && openssl rand -base64 32 > secrets/api_token.txt && docker compose up -d --build && echo "Open http://127.0.0.1:47800 with the token in secrets/api_token.txt"
 ```
 
 Step by step:
@@ -88,7 +88,7 @@ openssl rand -base64 32 > secrets/api_token.txt
 docker compose up -d --build
 ```
 
-Open http://127.0.0.1:8000 and log in with the token in `secrets/api_token.txt`. Telegram and WhatsApp are off: read `services/telegram/README.md` and `services/whatsapp/README.md` first.
+Open http://127.0.0.1:47800 and log in with the token in `secrets/api_token.txt`. Telegram and WhatsApp are off: read `services/telegram/README.md` and `services/whatsapp/README.md` first.
 
 ### Option B: CLI only, on your machine
 
@@ -106,7 +106,7 @@ uv run deepsift services                   # what is installed and what each ser
 uv run deepsift user nightowl_77 -o findings.json
 ```
 
-The CLI reads settings from the environment, not from `.env`: load it with `set -a; . ./.env; set +a`. For web mentions you need a SearXNG instance (`docker compose up -d searxng`, then `SEARXNG_URL=http://127.0.0.1:8080`).
+The CLI reads settings from the environment, not from `.env`: load it with `set -a; . ./.env; set +a`. For web mentions you need a SearXNG instance (`docker compose up -d searxng`, then `SEARXNG_URL=http://127.0.0.1:47880`).
 
 ### Option C: gateway and GUI, without Docker
 
@@ -116,7 +116,7 @@ cd gui && npm ci && npm run build && cd ..
 DEEPSIFT_GUI_DIR=gui/dist uv run deepsift-gateway
 ```
 
-Open http://127.0.0.1:8000. The token is in `~/.local/share/deepsift/api-token`. Services run inside the gateway; data goes to SQLite in the same folder. The CLI can use this gateway too: `uv run deepsift --gateway http://127.0.0.1:8000 user nightowl_77`.
+Open http://127.0.0.1:47800. The token is in `~/.local/share/deepsift/api-token`. Services run inside the gateway; data goes to SQLite in the same folder. The CLI can use this gateway too: `uv run deepsift --gateway http://127.0.0.1:47800 user nightowl_77`.
 
 More: [`gateway/README.md`](gateway/README.md), [`cli/README.md`](cli/README.md), [`gui/README.md`](gui/README.md).
 

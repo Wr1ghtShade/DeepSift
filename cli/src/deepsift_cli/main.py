@@ -38,7 +38,7 @@ def main(
             "--gateway",
             "-g",
             envvar="DEEPSIFT_GATEWAY_URL",
-            help="Run through this DeepSift gateway (e.g. http://127.0.0.1:8000) "
+            help="Run through this DeepSift gateway (e.g. http://127.0.0.1:47800) "
             "instead of local services. Token: DEEPSIFT_API_TOKEN.",
         ),
     ] = None,

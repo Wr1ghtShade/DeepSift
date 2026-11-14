@@ -10,7 +10,7 @@ pivot engine and correlation. It serves the web GUI too.
 | Laptop, no Docker | `pipx install "deepsift-gateway[services]"` then `deepsift-gateway` | inside the gateway process |
 | Stack | `docker compose up --build` | in the service workers, over Redis |
 
-It listens on `127.0.0.1:8000` by default. On first start without `DEEPSIFT_API_TOKEN`
+It listens on `127.0.0.1:47800` by default (`DEEPSIFT_PORT`; port 8000 inside the Docker image). On first start without `DEEPSIFT_API_TOKEN`
 it creates a token in `$DEEPSIFT_DATA_DIR/api-token` (mode 0600) and logs the path.
 
 ## Settings
@@ -25,7 +25,7 @@ it creates a token in `$DEEPSIFT_DATA_DIR/api-token` (mode 0600) and logs the pa
 | `DEEPSIFT_BLOBS_DIR` | `<data dir>/blobs` | Shared with avatar-hash, tineye, telegram |
 | `DEEPSIFT_GUI_DIR` | the GUI inside the wheel | Built GUI to serve on `/` (e.g. `gui/dist` while developing) |
 | `DEEPSIFT_ALLOWED_ORIGINS` | — | Extra browser origins, comma-separated (e.g. the Vite dev server) |
-| `DEEPSIFT_HOST`, `DEEPSIFT_PORT` | `127.0.0.1`, `8000` | Listen address |
+| `DEEPSIFT_HOST`, `DEEPSIFT_PORT` | `127.0.0.1`, `47800` | Listen address |
 | `DEEPSIFT_FORWARDED_ALLOW_IPS` | — | Trust `X-Forwarded-*` from this reverse proxy |
 | `DEEPSIFT_HSTS` | off | `1` behind HTTPS |
 | `DEEPSIFT_SESSION_TTL` | `43200` | Session lifetime in seconds |

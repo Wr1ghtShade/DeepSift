@@ -18,7 +18,7 @@ token pairs driven by `<meta name="color-scheme">`.
 ## Develop
 
 ```
-uv run deepsift-gateway                                     # terminal 1, port 8000
+uv run deepsift-gateway                                     # terminal 1, port 47800
 DEEPSIFT_ALLOWED_ORIGINS=http://localhost:5173 uv run deepsift-gateway   # (if you use Vite)
 cd gui && npm install && npm run dev                        # terminal 2, port 5173
 npm test            # unit tests (Vitest)

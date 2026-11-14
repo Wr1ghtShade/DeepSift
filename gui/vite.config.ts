@@ -19,7 +19,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       // Run the gateway with DEEPSIFT_ALLOWED_ORIGINS=http://localhost:5173
-      "/api": { target: "http://127.0.0.1:8000", ws: true },
+      "/api": { target: "http://127.0.0.1:47800", ws: true },
     },
   },
   test: {
