@@ -78,6 +78,7 @@ def test_load_manifest(tmp_path):
     assert manifest.option_default("depth") == "a"
     assert manifest.missing_secrets({}) == ["DEMO_KEY"]
     assert manifest.missing_secrets({"DEMO_KEY": "x"}) == []
+    assert manifest.optional_secrets == []
 
 
 def test_manifest_rejects_bad_name_and_rate(tmp_path):

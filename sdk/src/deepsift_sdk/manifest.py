@@ -50,6 +50,7 @@ class Manifest(BaseModel):
     concurrency: int = Field(default=1, ge=1)
     rate_limit: str | None = None
     secrets: list[str] = Field(default_factory=list)
+    optional_secrets: list[str] = Field(default_factory=list)
     options: dict[str, OptionSpec] = Field(default_factory=dict)
 
     @field_validator("timeout", mode="before")
@@ -70,6 +71,10 @@ class Manifest(BaseModel):
     def missing_secrets(self, env: Mapping[str, str] | None = None) -> list[str]:
         env = os.environ if env is None else env
         return [name for name in self.secrets if not env.get(name)]
+
+    def missing_optional_secrets(self, env: Mapping[str, str] | None = None) -> list[str]:
+        env = os.environ if env is None else env
+        return [name for name in self.optional_secrets if not env.get(name)]
 
     def option_default(self, name: str) -> Any:
         spec = self.options.get(name)

@@ -69,6 +69,7 @@ timeout: 300s                 # per task
 concurrency: 2                # tasks run in parallel by one instance
 rate_limit: 1/s               # optional, towards external sites
 secrets: []                   # names of required secrets, e.g. [TINEYE_API_KEY]
+optional_secrets: []          # names of secrets that improve results, e.g. [GRAVATAR_API_KEY]
 options:                      # optional, shown in the GUI and as CLI flags
   depth:
     type: enum
@@ -81,6 +82,7 @@ Rules:
 - `inputs` and `outputs` use the types of section 2. A new type needs a change to this document.
 - `secrets` lists **names only**. Values come from environment variables or Docker secrets and never travel on the bus.
 - A service with a missing secret registers anyway with state `needs_config`. The gateway does not send it tasks.
+- `optional_secrets` raise limits or unlock fields when set; the service works without them.
 
 ## 4. Registration and health
 
