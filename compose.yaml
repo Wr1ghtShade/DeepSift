@@ -87,6 +87,26 @@ services:
     depends_on:
       - redis
 
+  svc-phone-meta:
+    build:
+      context: .
+      dockerfile: services/phone-meta/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+
+  svc-ignorant:
+    build:
+      context: .
+      dockerfile: services/ignorant/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+
 secrets:
   postgres_password:
     file: ./secrets/postgres_password.txt

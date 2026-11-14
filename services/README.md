@@ -9,8 +9,8 @@ One folder per service: a Python package with its `manifest.yaml`, a `Dockerfile
 | [`holehe`](holehe/) | email | account | ✅ Done |
 | [`gravatar`](gravatar/) | email | profile, image, identity | ✅ Done |
 | [`dns-mail`](dns-mail/) | email, domain | mx_record | ✅ Done |
-| `phone-meta` | phone | phone_meta | Planned |
-| `ignorant` | phone | account | Planned |
+| [`phone-meta`](phone-meta/) | phone | phone_meta | ✅ Done |
+| [`ignorant`](ignorant/) | phone | account | ✅ Done |
 | `searxng` | all | web_page | Planned |
 | [`avatar-hash`](avatar-hash/) | image | image_hash | ✅ Done |
 | `tineye` | image | web_page | Planned |

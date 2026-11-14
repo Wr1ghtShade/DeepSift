@@ -7,7 +7,7 @@
 
 # DeepSift
 
-> **🚧 Work in progress.** DeepSift is in early development. The CLI already searches usernames (Sherlock, Maigret) and email addresses (holehe, Gravatar, MX records), and spots profiles that share the same avatar; the gateway, the web GUI and the other services are still to come. Expect breaking changes.
+> **🚧 Work in progress.** DeepSift is in early development. The CLI already searches usernames (Sherlock, Maigret) email addresses (holehe, Gravatar, MX records) and phone numbers (offline metadata, ignorant), and spots profiles that share the same avatar; the gateway, the web GUI and the other services are still to come. Expect breaking changes.
 
 DeepSift is an OSINT investigation console. Give it a selector — a username, an email address, a phone number, a domain or an image — and it runs the matching collection services, merges what they find, and lets you pivot from one result to the next.
 
@@ -20,7 +20,7 @@ It ships as a **CLI** and a **web GUI**, built on a **micro-service architecture
 | Service contract | Draft v1 — [`docs/specs/service-contract.md`](docs/specs/service-contract.md) |
 | SDK | ✅ Models, `Service` base class, Redis Streams and in-memory buses, worker, local mode |
 | CLI | ✅ Local mode with automatic pivots and avatar groups: `user`, `email`, `phone`, `domain`, `image`, `search`, `services` |
-| Services | ✅ `sherlock`, `maigret`, `avatar-hash`, `holehe`, `gravatar`, `dns-mail` · 4 more planned, see [`services/`](services/) |
+| Services | ✅ 8 of 10 for v1: `sherlock`, `maigret`, `avatar-hash`, `holehe`, `gravatar`, `dns-mail`, `phone-meta`, `ignorant` · see [`services/`](services/) |
 | Gateway | Not started |
 | Web GUI | Mockups done, not implemented |
 
