@@ -1,0 +1,208 @@
+# Service contract
+
+**Status:** draft · **Contract version:** 1
+
+This document defines how DeepSift services talk to the gateway. Any service that follows it can be added to a deployment without changes to the gateway, the CLI or the GUI.
+
+## 1. Concepts
+
+| Term | Meaning |
+|---|---|
+| **Selector** | What the user types: a username, an email, a phone number, a domain or an image |
+| **Entity** | A typed piece of data: a selector, or something a service found (a profile, an account, an avatar…) |
+| **Link** | A directed relation between two entities (`found_on`, `same_avatar`, `mentions`…) |
+| **Service** | A process that accepts entities of some types and emits new entities and links |
+| **Task** | One request for one service to process one entity |
+| **Run** | All tasks started from one selector in one investigation |
+| **Investigation** | A named case grouping runs, entities and links |
+| **Pivot** | Using an entity found by one service as the input of another |
+
+## 2. Entity types
+
+| Type | `value` | Notable `attributes` |
+|---|---|---|
+| `username` | `nightowl_77` | — |
+| `email` | `n.owl@example.org` (lower-cased) | — |
+| `phone` | E.164, `+33612345678` | — |
+| `domain` | `example.org` (lower-cased, no trailing dot) | — |
+| `url` | absolute URL | — |
+| `image` | URL or `blob:<sha256>` | `mime`, `width`, `height` |
+| `profile` | profile URL | `site`, `username`, `display_name`, `bio`, `location`, `created_at`, `avatar_url` |
+| `account` | `<site>:<selector>` | `site`, `exists`, `recovery_hint` |
+| `identity` | free text | `name`, `aliases` |
+| `web_page` | URL | `title`, `snippet`, `engine` |
+| `phone_meta` | E.164 | `country`, `carrier`, `line_type`, `valid` |
+| `mx_record` | host | `priority`, `domain` |
+| `image_hash` | `phash:<hex>` | `algo`, `sha256` |
+| `avatar_group` | group id | `members` |
+
+### Entity object
+
+```json
+{
+  "type": "profile",
+  "value": "https://github.com/nightowl_77",
+  "attributes": { "site": "GitHub", "username": "nightowl_77", "avatar_url": "https://…" },
+  "confidence": 0.9
+}
+```
+
+- `confidence` is the service's own estimate, from 0 to 1. The gateway combines estimates from several services into the score shown to users.
+- **Identity key:** two entities are the same when `type` and the normalized `value` are equal. The gateway merges them and keeps the list of services that found each one.
+
+## 3. Manifest
+
+Every service ships a `manifest.yaml` and publishes it when it registers.
+
+```yaml
+contract: 1
+name: maigret                 # unique, [a-z0-9-]
+version: 0.1.0                # the service's own semver
+description: Username search on 3000+ sites with profile extraction
+inputs: [username]
+outputs: [profile, identity, image]
+links: [found_on]
+mode: library                 # library | api | local
+license: MIT                  # licence of the wrapped tool
+timeout: 300s                 # per task
+concurrency: 2                # tasks run in parallel by one instance
+rate_limit: 1/s               # optional, towards external sites
+secrets: []                   # names of required secrets, e.g. [TINEYE_API_KEY]
+options:                      # optional, shown in the GUI and as CLI flags
+  depth:
+    type: enum
+    values: [top500, all]
+    default: top500
+```
+
+Rules:
+
+- `inputs` and `outputs` use the types of section 2. A new type needs a change to this document.
+- `secrets` lists **names only**. Values come from environment variables or Docker secrets and never travel on the bus.
+- A service with a missing secret registers anyway with state `needs_config`. The gateway does not send it tasks.
+
+## 4. Registration and health
+
+Transport is Redis. All keys are prefixed with `deepsift:`.
+
+1. At startup, the service writes its manifest to the stream `deepsift:registry` with `event: register`.
+2. Every 15 s it sets `deepsift:heartbeat:<name>:<instance_id>` with a 45 s TTL. The value holds `state` (`ready`, `busy`, `needs_config`) and the number of running tasks.
+3. On shutdown it writes `event: deregister`.
+
+The gateway reads the registry stream and the heartbeats. A service with no live heartbeat is shown as offline.
+
+## 5. Tasks and results
+
+### Streams
+
+| Stream | Writer | Reader |
+|---|---|---|
+| `deepsift:tasks:<service>` | gateway | the service, through the consumer group `<service>` |
+| `deepsift:events` | services | gateway |
+
+Using a consumer group lets several instances of one service share the load. A service acknowledges (`XACK`) a task only after it has sent `completed` or `failed`. Tasks left pending longer than `timeout` are claimed again (`XAUTOCLAIM`), up to 2 retries.
+
+### Task message
+
+```json
+{
+  "contract": 1,
+  "task_id": "01J…",
+  "run_id": "01J…",
+  "investigation_id": "01J…",
+  "service": "maigret",
+  "input": { "id": "ent_…", "type": "username", "value": "nightowl_77" },
+  "options": { "depth": "top500" },
+  "deadline": "2026-11-14T12:00:00Z"
+}
+```
+
+IDs are ULIDs.
+
+### Event messages
+
+Every event carries `contract`, `task_id`, `service` and `event`.
+
+| `event` | Extra fields | Meaning |
+|---|---|---|
+| `started` | — | The service picked up the task |
+| `progress` | `done`, `total`, `message` | Optional, drives the progress lanes in the GUI |
+| `entity` | `entity`, `link` | One finding. `link` is `{ "from": "<input id>", "rel": "found_on" }` |
+| `completed` | `count` | No more findings for this task |
+| `failed` | `error` | See section 8 |
+
+Services send findings as they find them. They do not batch them until the end.
+
+## 6. Pivots
+
+The gateway owns pivots. Services never call each other.
+
+- When an `entity` event arrives, the gateway lists the services whose `inputs` include its type.
+- **Manual mode (default):** the GUI and CLI offer these services as pivots.
+- **Automatic mode:** set per run with `max_depth` (default 1, maximum 3). The gateway starts the tasks itself and never runs the same service twice on the same entity.
+
+## 7. Gateway API
+
+Base path: `/api/v1`. JSON everywhere.
+
+| Method and path | Purpose |
+|---|---|
+| `POST /investigations` | Create an investigation `{ "name" }` |
+| `GET /investigations` | List investigations |
+| `GET /investigations/{id}` | One investigation with its runs |
+| `POST /investigations/{id}/runs` | Start a run `{ "selector", "type"?, "services"?, "options"?, "auto_pivot"?, "max_depth"? }`. Without `type`, the gateway detects it. Without `services`, it uses every enabled service that accepts the type |
+| `POST /runs/{id}/cancel` | Stop a run |
+| `GET /investigations/{id}/entities` | Entities, with filters `type`, `service`, `min_confidence` |
+| `GET /investigations/{id}/graph` | Entities and links, for the graph view |
+| `GET /entities/{id}` | One entity, its sources and its links |
+| `POST /entities/{id}/pivot` | Run services on this entity `{ "services"? }` |
+| `GET /investigations/{id}/export?format=json\|csv\|html` | Report |
+| `GET /services` | Registered services: manifest, state, instances |
+| `PATCH /services/{name}` | `{ "enabled": bool }` |
+| `WS /investigations/{id}/stream` | Live events: `task.*` (section 5), `entity.merged`, `run.completed` |
+
+The CLI uses this API when a gateway is configured. Otherwise it runs services as local processes behind the same contract (section 9).
+
+## 8. Errors
+
+```json
+{ "code": "rate_limited", "message": "429 from target site", "retryable": true }
+```
+
+| `code` | Retryable | Meaning |
+|---|---|---|
+| `invalid_input` | no | The value does not fit the type |
+| `needs_config` | no | A secret is missing |
+| `rate_limited` | yes | The target site throttled the service |
+| `upstream_error` | yes | The target site or API failed |
+| `timeout` | yes | The deadline passed |
+| `internal` | no | Bug in the service |
+
+## 9. Local mode (CLI without Docker)
+
+The SDK provides an in-process bus with the same messages. `deepsift user nightowl_77` loads the installed services as Python entry points (group `deepsift.services`) and runs them without Redis or a gateway. Results are printed, or saved with `--output`.
+
+## 10. Security
+
+- Only the gateway is exposed. Services open no inbound port.
+- Secrets live in environment variables or Docker secrets, never in manifests, messages or logs.
+- v1 binds to localhost or an internal network, behind Caddy for TLS. Authentication (login screen, user accounts) is planned for v1.5.
+- Downloaded avatars are stored by SHA-256 and served only through the gateway.
+
+## 11. Data policy
+
+- Public sources only. No breached or stolen data, no breach-search engines built on leaks.
+- No facial recognition.
+- Each service respects the target site's rate limits and declares them in its manifest.
+
+## 12. Versioning
+
+- `contract` is an integer carried by every manifest and message.
+- Adding optional fields keeps the version. Removing or changing a field increments it.
+- The gateway accepts the current version and the one before it.
+
+## Open questions
+
+- Redis Streams or NATS JetStream for the bus? Redis is the default, as it is already needed for caching.
+- Object storage: local volume first, S3-compatible (MinIO) later?
+- How the gateway combines confidences from several services.

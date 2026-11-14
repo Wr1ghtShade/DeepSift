@@ -1,0 +1,30 @@
+# DeepSift stack — work in progress.
+# Only the infrastructure is defined for now; the gateway, the GUI and the
+# services will be added as they are built.
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: deepsift
+      POSTGRES_USER: deepsift
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+
+volumes:
+  redis-data:
+  postgres-data:
