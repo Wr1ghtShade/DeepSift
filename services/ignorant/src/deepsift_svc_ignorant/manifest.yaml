@@ -1,0 +1,21 @@
+contract: 1
+name: ignorant
+version: 0.1.0
+description: Checks whether a phone number is used on Amazon, Instagram or Snapchat, without alerting it
+inputs: [phone]
+outputs: [account]
+links: [registered_on]
+mode: library
+license: GPL-3.0
+timeout: 60s
+concurrency: 2
+secrets: []
+options:
+  default_region:
+    type: str
+    default: ""
+    description: Two-letter country (e.g. FR) for numbers written without a +country code
+  module_timeout:
+    type: int
+    default: 15
+    description: Seconds to wait for each site
