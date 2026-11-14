@@ -1,0 +1,21 @@
+contract: 1
+name: phone-meta
+version: 0.1.0
+description: Offline metadata of a phone number (country, area, original carrier, line type, time zone)
+inputs: [phone]
+outputs: [phone_meta]
+links: [metadata]
+mode: local
+license: Apache-2.0
+timeout: 5s
+concurrency: 8
+secrets: []
+options:
+  default_region:
+    type: str
+    default: ""
+    description: Two-letter country (e.g. FR) for numbers written without a +country code
+  lang:
+    type: str
+    default: en
+    description: Language for country, area and carrier names (e.g. fr)
