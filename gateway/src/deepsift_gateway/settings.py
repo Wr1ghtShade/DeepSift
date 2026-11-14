@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 TOKEN_FILE = "api-token"
+#: The GUI build shipped inside the wheel (release builds copy gui/dist here).
+PACKAGED_GUI = Path(__file__).parent / "static"
 
 
 def data_dir() -> Path:
@@ -55,6 +57,10 @@ def database_url(directory: Path) -> str:
     return url
 
 
+def packaged_gui() -> Path | None:
+    return PACKAGED_GUI if (PACKAGED_GUI / "index.html").is_file() else None
+
+
 def _split(value: str | None) -> list[str]:
     return [item.strip().rstrip("/") for item in (value or "").split(",") if item.strip()]
 
@@ -93,7 +99,7 @@ class Settings:
             api_token=token,
             redis_url=_read_secret("DEEPSIFT_REDIS_URL") or os.environ.get("REDIS_URL"),
             allowed_origins=_split(os.environ.get("DEEPSIFT_ALLOWED_ORIGINS")),
-            gui_dir=Path(gui) if gui else None,
+            gui_dir=Path(gui) if gui else packaged_gui(),
             blobs_dir=Path(blobs) if blobs else directory / "blobs",
             session_ttl=int(os.environ.get("DEEPSIFT_SESSION_TTL", 12 * 3600)),
             # Browsers accept Secure cookies on http://localhost, so this stays on.

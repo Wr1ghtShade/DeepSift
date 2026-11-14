@@ -33,3 +33,6 @@ data/
 
 # Agent instructions (kept local)
 CLAUDE.md
+
+# GUI build copied into the gateway wheel at release time
+gateway/src/deepsift_gateway/static/

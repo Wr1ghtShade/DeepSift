@@ -69,7 +69,7 @@ Some services need settings or keys: copy `.env.example` to `.env` and fill in w
 
 To run the API and the GUI: build the GUI once (`cd gui && npm install && npm run build`), then `DEEPSIFT_GUI_DIR=gui/dist uv run deepsift-gateway` and open http://127.0.0.1:8000 (tasks run in-process; the token is written to `~/.local/share/deepsift/api-token`), or `docker compose up --build` for the full stack with Redis, PostgreSQL and one worker per service. See [`gateway/README.md`](gateway/README.md).
 
-In Docker, the gateway image already contains the GUI. Later: `pipx install deepsift` for the CLI.
+In Docker, the gateway image already contains the GUI. Releases (tag `v*`) build every package, the gateway wheel with the GUI inside, ready for `pipx install deepsift` and `pipx install "deepsift-gateway[services]"` once published on PyPI.
 
 ## Development
 

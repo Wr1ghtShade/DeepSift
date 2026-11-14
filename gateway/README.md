@@ -23,7 +23,7 @@ it creates a token in `$DEEPSIFT_DATA_DIR/api-token` (mode 0600) and logs the pa
 | `DEEPSIFT_REDIS_URL` (or `REDIS_URL`) | — | Set it to send tasks to workers; unset runs them in-process |
 | `DEEPSIFT_DATA_DIR` | `~/.local/share/deepsift` | Token, SQLite, blobs |
 | `DEEPSIFT_BLOBS_DIR` | `<data dir>/blobs` | Shared with avatar-hash, tineye, telegram |
-| `DEEPSIFT_GUI_DIR` | — | Built GUI (`gui/dist`) to serve on `/` |
+| `DEEPSIFT_GUI_DIR` | the GUI inside the wheel | Built GUI to serve on `/` (e.g. `gui/dist` while developing) |
 | `DEEPSIFT_ALLOWED_ORIGINS` | — | Extra browser origins, comma-separated (e.g. the Vite dev server) |
 | `DEEPSIFT_HOST`, `DEEPSIFT_PORT` | `127.0.0.1`, `8000` | Listen address |
 | `DEEPSIFT_FORWARDED_ALLOW_IPS` | — | Trust `X-Forwarded-*` from this reverse proxy |

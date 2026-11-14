@@ -16,6 +16,9 @@ dependencies = [
   "redis>=5",
 ]
 
+[project.urls]
+Homepage = "https://github.com/Wr1ghtShade/DeepSift"
+
 [project.optional-dependencies]
 # Run services in-process when no Redis is configured (single-user install).
 services = ["deepsift[all]"]
@@ -33,3 +36,5 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/deepsift_gateway"]
+# The GUI build is git-ignored; release builds copy it in before `uv build`.
+artifacts = ["src/deepsift_gateway/static"]
